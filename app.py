@@ -122,7 +122,7 @@ def get_redash_data():
 # ==============================
 @app.route("/")
 def home():
-    return render_template("Dashboard.html")   # ⚠️ MUST match filename exactly
+    return render_template("dashboard.html")   # ⚠️ MUST match filename exactly
 
 # ==============================
 # 🔍 ORDER SEARCH
