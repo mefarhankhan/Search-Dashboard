@@ -1,1 +1,276 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order & Book Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial;
+            background: #f4f6f9;
+        }
+
+        header {
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            color: white;
+            padding: 18px;
+            font-size: 22px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 14px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .tab:hover {
+            background: #f1f1f1;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid #007bff;
+            color: #007bff;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        input {
+            width: 70%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 12px 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+
+        .order-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: #fff;
+            transition: 0.2s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .tag {
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .green { background: #28a745; }
+        .orange { background: #fd7e14; }
+        .red { background: #dc3545; }
+
+        .loading { color: orange; }
+        .error { color: red; }
+        .success { color: green; }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #222;
+            color: white;
+            padding: 12px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        footer span {
+            margin-right: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    📊 Order & Book Dashboard
+</header>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('order')">Track Order</div>
+    <div class="tab" onclick="switchTab('book')">Search Books</div>
+</div>
+
+<div class="container">
+
+    <!-- ORDER TAB -->
+    <div id="orderSection" class="card">
+        <h3>Track Your Order</h3>
+
+        <input type="text" id="inputData" placeholder="Enter Mobile or Email">
+        <button onclick="searchData()">Search</button>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <!-- BOOK TAB -->
+    <div id="bookSection" class="card" style="display:none;">
+        <h3>Search Pre-order / New Books</h3>
+
+        <input type="text" id="bookInput" placeholder="Enter Book Name">
+        <button onclick="searchBooks()">Search</button>
+
+        <div id="bookResult" class="result"></div>
+    </div>
+
+</div>
+
+<!-- FOOTER LEGEND -->
+<footer>
+    <span><b>EDD</b> = Delivery Date</span>
+    <span><b>Pre-order</b> = Not released yet</span>
+    <span><b>New</b> = Recently launched</span>
+    <span><b>AWB</b> = Tracking ID</span>
+</footer>
+
+<script>
+function switchTab(tab) {
+    document.getElementById("orderSection").style.display = tab === 'order' ? "block" : "none";
+    document.getElementById("bookSection").style.display = tab === 'book' ? "block" : "none";
+
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    event.target.classList.add("active");
+}
+
+// ORDER SEARCH (existing API)
+async function searchData() {
+    let input = document.getElementById("inputData").value.trim();
+    let resultDiv = document.getElementById("result");
+
+    if (!input) {
+        resultDiv.innerHTML = "<p class='error'>Enter mobile/email</p>";
+        return;
+    }
+
+    resultDiv.innerHTML = "<p class='loading'>Searching...</p>";
+
+    let response = await fetch("https://sheet-bot-sfuv.onrender.com/search", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ query: input })
+    });
+
+    let data = await response.json();
+
+    if (!data.orders || data.orders.length === 0) {
+        resultDiv.innerHTML = "<p class='error'>No orders found</p>";
+        return;
+    }
+
+    let html = `<p class='success'><b>${data.count} Order(s)</b></p>`;
+
+    data.orders.forEach(order => {
+        let statusClass = "orange";
+        if (order.status.toLowerCase().includes("delivered")) statusClass = "green";
+        else if (order.status.toLowerCase().includes("cancel")) statusClass = "red";
+
+        html += `
+            <div class="order-card">
+                <p><b>${order.product}</b></p>
+                <p>Status: <span class="tag ${statusClass}">${order.status}</span></p>
+                <p>Courier: ${order.courier}</p>
+                <p>EDD: ${order.edd || "NA"}</p>
+                <p>AWB: ${order.awb || "NA"}</p>
+            </div>
+        `;
+    });
+
+    resultDiv.innerHTML = html;
+}
+
+// BOOK SEARCH (NEW API)
+async function searchBooks() {
+    let input = document.getElementById("bookInput").value.trim();
+    let resultDiv = document.getElementById("bookResult");
+
+    if (!input) {
+        resultDiv.innerHTML = "<p class='error'>Enter book name</p>";
+        return;
+    }
+
+    resultDiv.innerHTML = "<p class='loading'>Searching books...</p>";
+
+    let response = await fetch("https://sheet-bot-sfuv.onrender.com/book-search", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ query: input })
+    });
+
+    let data = await response.json();
+
+    if (!data.books || data.books.length === 0) {
+        resultDiv.innerHTML = "<p class='error'>No books found</p>";
+        return;
+    }
+
+    let html = `<p class='success'><b>${data.books.length} Book(s)</b></p>`;
+
+    data.books.forEach(book => {
+        html += `
+            <div class="order-card">
+                <p><b>${book.name}</b></p>
+                <p>Estimated Delivery: ${book.edd || "Not Available"}</p>
+            </div>
+        `;
+    });
+
+    resultDiv.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
+```
 
