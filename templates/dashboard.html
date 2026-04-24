@@ -143,7 +143,7 @@
 <body>
 
 <header>
-    📊 Order & Book Dashboard
+    📊 Order Tracking & Pre-order time Dashboard
 </header>
 <div class="tabs">
     <div class="tab active" onclick="switchTab('order')">Track Order</div>
@@ -176,9 +176,9 @@
 
 <!-- FOOTER LEGEND -->
 <footer>
-    <span><b>EDD</b> = Delivery Date</span>
-    <span><b>Pre-order</b> = Not released yet</span>
-    <span><b>New</b> = Recently launched</span>
+    <span><b>EDD</b> = Estimeted Delivery Date</span>
+    <span><b>Pre-order,New </b> =Check from serach book Tab</span>
+    <span><b>RTO</b> = Returned to seller</span>
     <span><b>AWB</b> = Tracking ID</span>
 </footer>
 
@@ -255,7 +255,7 @@ async function searchBooks() {
 
     resultDiv.innerHTML = "<p class='loading'>Searching books...</p>";
 
-    let response = await fetch("https://sheet-bot-sfuv.onrender.com/book-search", {
+    let response = await fetch("https://search-dashboard-uiwb.onrender.com/book-search", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ query: input })
