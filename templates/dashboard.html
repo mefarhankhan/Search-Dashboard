@@ -145,21 +145,6 @@
 <header>
     📊 Order & Book Dashboard
 </header>
-
-    <div class="order-card">
-        <p><b>${order.product}</b></p>
-        <p>Status: ${order.status}</p>
-        <p>Courier: ${order.courier}</p>
-        <p>EDD: ${order.edd || "NA"}</p>
-        <p>AWB: ${order.awb || "NA"}</p>
-
-        ${
-            order.tracking_link
-            ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
-            : `<span style="color:gray;">Tracking not available</span>`
-        }
-    </div>
-`
 <div class="tabs">
     <div class="tab active" onclick="switchTab('order')">Track Order</div>
     <div class="tab" onclick="switchTab('book')">Search Books</div>
@@ -239,14 +224,20 @@ async function searchData() {
         else if (order.status.toLowerCase().includes("cancel")) statusClass = "red";
 
         html += `
-            <div class="order-card">
-                <p><b>${order.product}</b></p>
-                <p>Status: <span class="tag ${statusClass}">${order.status}</span></p>
-                <p>Courier: ${order.courier}</p>
-                <p>EDD: ${order.edd || "NA"}</p>
-                <p>AWB: ${order.awb || "NA"}</p>
-            </div>
-        `;
+    <div class="order-card">
+        <p><b>${order.product}</b></p>
+        <p>Status: ${order.status}</p>
+        <p>Courier: ${order.courier}</p>
+        <p>EDD: ${order.edd || "NA"}</p>
+        <p>AWB: ${order.awb || "NA"}</p>
+
+        ${
+            order.tracking_link
+            ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
+            : `<span style="color:gray;">Tracking not available</span>`
+        }
+    </div>
+`;
     });
 
     resultDiv.innerHTML = html;
