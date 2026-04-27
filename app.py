@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ==============================
-# 🔐 Google API Setup
+# 🔐 GOOGLE SHEET SETUP
 # ==============================
 scope = [
     "https://spreadsheets.google.com/feeds",
@@ -29,7 +29,12 @@ sheet = client.open("BOOK QUERIES").worksheet("All orders")
 # 🔴 REDASH CONFIG
 # ==============================
 REDASH_API_KEY = os.environ.get("REDASH_API_KEY")
+
+# 🔹 Query 1 → Order fallback (preorder tracking)
 REDASH_QUERY_ID = "19923"
+
+# 🔹 Query 2 → Book search
+BOOK_SEARCH_QUERY_ID = "17893"  
 REDASH_BASE_URL = "https://data.testbook.com"
 
 # ==============================
@@ -40,14 +45,14 @@ def last10(val):
     return v[-10:] if v else ""
 
 # ==============================
-# 🚀 FAST CACHE
+# 🚀 SHEET CACHE
 # ==============================
 mobile_cache = {}
 email_cache = {}
 order_cache = {}
 
 last_updated = 0
-CACHE_TTL = 3600  # 1 hour
+CACHE_TTL = 3600
 
 lock = threading.Lock()
 
@@ -59,26 +64,19 @@ def refresh_cache():
         print(f"📊 Rows fetched: {len(records)}")
 
         m_cache, e_cache, o_cache = {}, {}, {}
-        bad_rows = 0
 
         for row in records:
             try:
                 if not isinstance(row, dict):
-                    bad_rows += 1
                     continue
 
-                # normalize safely (fix for int issue)
                 data = {}
                 for k, v in row.items():
-                    key = str(k).strip().lower()
-                    val = str(v).strip() if v is not None else ""
-                    data[key] = val
+                    data[str(k).strip().lower()] = str(v).strip() if v else ""
 
-                mobile_raw = data.get("customer mobile", "")
+                mobile = last10(data.get("customer mobile", ""))
                 email = data.get("customer email", "").lower()
                 order_id = data.get("order id", "").replace(" ", "")
-
-                mobile = last10(mobile_raw) if mobile_raw else ""
 
                 awb = data.get("awb code") or data.get("awb") or ""
                 status = data.get("status", "")
@@ -97,26 +95,21 @@ def refresh_cache():
 
                 if mobile:
                     m_cache.setdefault(mobile, []).append(order_obj)
-
                 if email:
                     e_cache.setdefault(email, []).append(order_obj)
-
                 if order_id:
                     o_cache.setdefault(order_id, []).append(order_obj)
 
             except Exception as e:
-                bad_rows += 1
-                print("⚠️ Skipping bad row:", row, "| Error:", str(e))
+                print("⚠️ Skipping row:", str(e))
 
-        # thread-safe swap
         with lock:
             mobile_cache = m_cache
             email_cache = e_cache
             order_cache = o_cache
             last_updated = time.time()
 
-        print(f"✅ Cache ready | Mobile: {len(m_cache)} Email: {len(e_cache)} Order: {len(o_cache)}")
-        print(f"⚠️ Bad rows skipped: {bad_rows}")
+        print(f"✅ Cache ready | M:{len(m_cache)} E:{len(e_cache)} O:{len(o_cache)}")
 
     except Exception as e:
         print("❌ Cache error:", str(e))
@@ -132,18 +125,9 @@ def get_data():
     return mobile_cache, email_cache, order_cache
 
 # ==============================
-# 🔴 REDASH CACHE
+# 🔴 REDASH FALLBACK (ORDER)
 # ==============================
-redash_cache = []
-redash_last_updated = 0
-REDASH_CACHE_TTL = 600  # 10 min
-
-def get_redash_data():
-    global redash_cache, redash_last_updated
-
-    if time.time() - redash_last_updated < REDASH_CACHE_TTL:
-        return redash_cache
-
+def check_redash_order(query):
     try:
         url = f"{REDASH_BASE_URL}/api/queries/{REDASH_QUERY_ID}/results.json"
         headers = {"Authorization": f"Key {REDASH_API_KEY}"}
@@ -151,15 +135,58 @@ def get_redash_data():
         res = requests.get(url, headers=headers, timeout=10)
         rows = res.json().get("query_result", {}).get("data", {}).get("rows", [])
 
-        redash_cache = rows
-        redash_last_updated = time.time()
+        q = last10(query)
 
-        print(f"🔴 Redash rows: {len(rows)}")
+        for row in rows:
+            mobile = last10(row.get("mobile", ""))
+
+            if q == mobile:
+                return {
+                    "awb": None,
+                    "status": row.get("shippingStatus") or "Preorder",
+                    "courier": "Not Available",
+                    "product": row.get("pName") or "Not Available",
+                    "created_at": "Not Available",
+                    "edd": row.get("estimated_delivery") or "Not Available",
+                    "tracking_link": None,
+                    "rto_reason": None
+                }
+
+        return None
+
+    except Exception as e:
+        print("❌ Redash fallback error:", str(e))
+        return None
+
+# ==============================
+# 🔴 BOOK REDASH CACHE
+# ==============================
+book_cache = []
+book_last_updated = 0
+BOOK_CACHE_TTL = 600
+
+def get_book_redash_data():
+    global book_cache, book_last_updated
+
+    if time.time() - book_last_updated < BOOK_CACHE_TTL:
+        return book_cache
+
+    try:
+        url = f"{REDASH_BASE_URL}/api/queries/{BOOK_SEARCH_QUERY_ID}/results.json"
+        headers = {"Authorization": f"Key {REDASH_API_KEY}"}
+
+        res = requests.get(url, headers=headers, timeout=10)
+        rows = res.json().get("query_result", {}).get("data", {}).get("rows", [])
+
+        book_cache = rows
+        book_last_updated = time.time()
+
+        print(f"📚 Book rows: {len(rows)}")
         return rows
 
     except Exception as e:
-        print("❌ Redash error:", str(e))
-        return redash_cache
+        print("❌ Book Redash error:", str(e))
+        return book_cache
 
 # ==============================
 # 🏠 HOME
@@ -169,7 +196,7 @@ def home():
     return render_template("dashboard.html")
 
 # ==============================
-# 🔍 SEARCH
+# 🔍 ORDER SEARCH
 # ==============================
 @app.route("/search", methods=["POST"])
 def search():
@@ -191,16 +218,19 @@ def search():
         or o_cache.get(q_order)
     )
 
-    # debug logs
-    print("🔍 Query:", query)
-    print("➡️ Mobile match:", bool(m_cache.get(q_mobile)))
-    print("➡️ Email match:", bool(e_cache.get(q_email)))
-    print("➡️ Order match:", bool(o_cache.get(q_order)))
-
     if rows:
         return jsonify({
             "count": len(rows),
             "orders": list(reversed(rows))
+        })
+
+    # 🔴 REDASH FALLBACK
+    redash_result = check_redash_order(query)
+
+    if redash_result:
+        return jsonify({
+            "count": 1,
+            "orders": [redash_result]
         })
 
     return jsonify({"status": "Not Found"})
@@ -211,17 +241,21 @@ def search():
 @app.route("/book-search", methods=["POST"])
 def book_search():
     data = request.get_json() or {}
-    query = data.get("query", "").lower()
+    query = data.get("query", "").lower().strip()
 
-    rows = get_redash_data()
+    if not query:
+        return jsonify({"books": []})
+
+    rows = get_book_redash_data()
     results = []
 
     for row in rows:
         name = str(row.get("pName") or "").lower()
+
         if query in name:
             results.append({
                 "name": row.get("pName"),
-                "edd": row.get("estimated_delivery") or "NA"
+                "expected_dispatch_time": row.get("estimatedDeliveryTime") or "Not Available"
             })
 
     return jsonify({"books": results})
