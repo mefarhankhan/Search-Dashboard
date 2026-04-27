@@ -28,7 +28,8 @@ sheet = client.open("BOOK QUERIES").worksheet("All orders")
 # ==============================
 # 🔴 REDASH CONFIG
 # ==============================
-REDASH_API_KEY = os.environ.get("REDASH_API_KEY")
+REDASH_API_KEY = os.environ.get("REDASH_API_KEY_1")
+REDASH_API_KEY = os.environ.get("REDASH_API_KEY_2")
 
 # 🔹 Query 1 → Order fallback (preorder tracking)
 REDASH_QUERY_ID = "19923"
@@ -130,7 +131,7 @@ def get_data():
 def check_redash_order(query):
     try:
         url = f"{REDASH_BASE_URL}/api/queries/{REDASH_QUERY_ID}/results.json?max_age=0"
-        headers = {"Authorization": f"Key {REDASH_API_KEY}"}
+        headers = {"Authorization": f"Key {REDASH_API_KEY_1}"}
 
         res = requests.get(url, headers=headers, timeout=10)
         rows = res.json().get("query_result", {}).get("data", {}).get("rows", [])
@@ -173,7 +174,7 @@ def get_book_redash_data():
 
     try:
         url = f"{REDASH_BASE_URL}/api/queries/{BOOK_SEARCH_QUERY_ID}/results.json"
-        headers = {"Authorization": f"Key {REDASH_API_KEY}"}
+        headers = {"Authorization": f"Key {REDASH_API_KEY_2}"}
 
         res = requests.get(url, headers=headers, timeout=10)
         rows = res.json().get("query_result", {}).get("data", {}).get("rows", [])
