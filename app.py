@@ -61,53 +61,50 @@ def refresh_cache():
         m_cache, e_cache, o_cache = {}, {}, {}
 
         for row in records:
-            data = {k.strip().lower(): v for k, v in row.items()}
+    try:
+        if not isinstance(row, dict):
+            continue  # skip bad rows
 
-            # SAFE extraction
-            mobile_raw = str(data.get("customer mobile") or "").strip()
-            email = str(data.get("customer email") or "").strip().lower()
-            order_id = str(data.get("order id") or "").strip().replace(" ", "")
+        # normalize safely
+        data = {}
+        for k, v in row.items():
+            key = str(k).strip().lower()
+            val = str(v).strip() if v is not None else ""
+            data[key] = val
 
-            mobile = last10(mobile_raw) if mobile_raw else ""
+        mobile_raw = data.get("customer mobile", "")
+        email = data.get("customer email", "").lower()
+        order_id = data.get("order id", "").replace(" ", "")
 
-            # build order object
-            awb = str(data.get("awb code") or data.get("awb") or "").strip()
-            status = str(data.get("status") or "").strip()
-            rto_reason = str(data.get("latest ndr reason") or "").strip()
+        mobile = last10(mobile_raw) if mobile_raw else ""
 
-            order_obj = {
-                "awb": awb or None,
-                "status": status or "Pending",
-                "courier": data.get("courier company") or "Not Assigned",
-                "product": (data.get("product name") or "")[:100],
-                "created_at": data.get("shiprocket created at") or "NA",
-                "edd": data.get("edd") or "NA",
-                "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
-                "rto_reason": rto_reason if "rto" in status.lower() else None
-            }
+        awb = data.get("awb code") or data.get("awb") or ""
+        status = data.get("status", "")
+        rto_reason = data.get("latest ndr reason", "")
 
-            if mobile:
-                m_cache.setdefault(mobile, []).append(order_obj)
+        order_obj = {
+            "awb": awb or None,
+            "status": status or "Pending",
+            "courier": data.get("courier company") or "Not Assigned",
+            "product": (data.get("product name") or "")[:100],
+            "created_at": data.get("shiprocket created at") or "NA",
+            "edd": data.get("edd") or "NA",
+            "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
+            "rto_reason": rto_reason if "rto" in status.lower() else None
+        }
 
-            if email:
-                e_cache.setdefault(email, []).append(order_obj)
+        if mobile:
+            m_cache.setdefault(mobile, []).append(order_obj)
 
-            if order_id:
-                o_cache.setdefault(order_id, []).append(order_obj)
+        if email:
+            e_cache.setdefault(email, []).append(order_obj)
 
-        # atomic update
-        with lock:
-            mobile_cache = m_cache
-            email_cache = e_cache
-            order_cache = o_cache
-            last_updated = time.time()
-
-        print(f"✅ Cache ready | Mobile: {len(m_cache)} Email: {len(e_cache)} Order: {len(o_cache)}")
+        if order_id:
+            o_cache.setdefault(order_id, []).append(order_obj)
 
     except Exception as e:
-        print("❌ Cache error:", str(e))
-
-
+        print("⚠️ Skipping bad row:", row, "| Error:", str(e))
+        
 def refresh_cache_async():
     threading.Thread(target=refresh_cache, daemon=True).start()
 
