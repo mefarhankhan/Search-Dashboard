@@ -28,15 +28,12 @@ sheet = client.open("BOOK QUERIES").worksheet("All orders")
 # ==============================
 # 🔴 REDASH CONFIG
 # ==============================
-REDASH_API_KEY_1 = os.environ.get("REDASH_API_KEY_1")  # Order fallback
-REDASH_API_KEY_2 = os.environ.get("REDASH_API_KEY_2")  # Book search
+REDASH_API_KEY_1 = os.environ.get("REDASH_API_KEY_1")
+REDASH_API_KEY_2 = os.environ.get("REDASH_API_KEY_2")
 
 REDASH_BASE_URL = "https://data.testbook.com"
 
-# 🔹 Query 1 → Order fallback
 REDASH_QUERY_ID = "19923"
-
-# 🔹 Query 2 → Book search
 BOOK_SEARCH_QUERY_ID = "17893"
 
 # ==============================
@@ -45,6 +42,16 @@ BOOK_SEARCH_QUERY_ID = "17893"
 def last10(val):
     v = str(val).strip().replace(" ", "").replace("+", "")
     return v[-10:] if v else ""
+
+def normalize_id(val):
+    """
+    Handles Mongo _id formats:
+    - string id
+    - {"$oid": "..."}
+    """
+    if isinstance(val, dict):
+        return val.get("$oid", "")
+    return str(val).strip().replace(" ", "")
 
 # ==============================
 # 🚀 SHEET CACHE
@@ -127,7 +134,7 @@ def get_data():
     return mobile_cache, email_cache, order_cache
 
 # ==============================
-# 🔴 REDASH FALLBACK (ORDER)
+# 🔴 REDASH FALLBACK (ORDER FIXED)
 # ==============================
 def check_redash_order(query):
     try:
@@ -140,9 +147,13 @@ def check_redash_order(query):
         q = last10(query)
 
         for row in rows:
+
+            # 🔥 FIX: handle both string + Mongo ObjectId format
+            raw_id = normalize_id(row.get("_id", ""))
+
             mobile = last10(row.get("mobile", ""))
 
-            if q == mobile:
+            if q == mobile or query == raw_id:
                 return {
                     "awb": None,
                     "status": row.get("shippingStatus") or "Preorder",
@@ -161,7 +172,7 @@ def check_redash_order(query):
         return None
 
 # ==============================
-# 🔴 BOOK REDASH CACHE
+# 🔴 BOOK CACHE
 # ==============================
 book_cache = []
 book_last_updated = 0
@@ -226,7 +237,7 @@ def search():
             "orders": list(reversed(rows))
         })
 
-    # 🔴 REDASH FALLBACK
+    # 🔴 REDASH fallback
     redash_result = check_redash_order(query)
 
     if redash_result:
