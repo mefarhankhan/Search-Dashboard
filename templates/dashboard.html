@@ -18,15 +18,16 @@
             text-align: center;
             font-weight: bold;
         }
+
         .track-btn {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 6px 12px;
-    background: #28a745;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-}
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
 
         .tabs {
             display: flex;
@@ -39,11 +40,6 @@
             padding: 14px 25px;
             cursor: pointer;
             font-weight: 600;
-            transition: 0.2s;
-        }
-
-        .tab:hover {
-            background: #f1f1f1;
         }
 
         .tab.active {
@@ -65,10 +61,6 @@
             margin-bottom: 20px;
         }
 
-        h3 {
-            margin-top: 0;
-        }
-
         input {
             width: 70%;
             padding: 12px;
@@ -86,37 +78,31 @@
             cursor: pointer;
         }
 
-        button:hover {
-            background: #0056b3;
-        }
-
-        .result {
-            margin-top: 20px;
-        }
-
         .order-card {
             border: 1px solid #eee;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 12px;
             background: #fff;
-            transition: 0.2s;
         }
 
-        .order-card:hover {
-            transform: translateY(-3px);
+        .product {
+            font-weight: bold;
+            margin-bottom: 5px;
+
+            /* 👇 Handles long names safely */
+            word-wrap: break-word;
         }
 
-        .tag {
-            padding: 3px 8px;
+        .rto-box {
+            margin-top: 8px;
+            padding: 8px;
+            background: #ffe6e6;
+            border-left: 4px solid red;
+            color: #b30000;
+            font-size: 13px;
             border-radius: 5px;
-            font-size: 12px;
-            color: white;
         }
-
-        .green { background: #28a745; }
-        .orange { background: #fd7e14; }
-        .red { background: #dc3545; }
 
         .loading { color: orange; }
         .error { color: red; }
@@ -133,21 +119,18 @@
             display: flex;
             justify-content: space-around;
         }
-
-        footer span {
-            margin-right: 15px;
-        }
     </style>
 </head>
 
 <body>
 
 <header>
-    📊 Order Tracking & Pre-order time Dashboard
+    📊 Order Tracking & Pre-order Dashboard
 </header>
+
 <div class="tabs">
-    <div class="tab active" onclick="switchTab('order')">Track Order</div>
-    <div class="tab" onclick="switchTab('book')">Search Books</div>
+    <div class="tab active" onclick="switchTab(event, 'order')">Track Order</div>
+    <div class="tab" onclick="switchTab(event, 'book')">Search Books</div>
 </div>
 
 <div class="container">
@@ -156,7 +139,7 @@
     <div id="orderSection" class="card">
         <h3>Track Your Order</h3>
 
-        <input type="text" id="inputData" placeholder="Enter Mobile or Email">
+        <input type="text" id="inputData" placeholder="Enter Mobile / Email / Order ID">
         <button onclick="searchData()">Search</button>
 
         <div id="result" class="result"></div>
@@ -164,7 +147,7 @@
 
     <!-- BOOK TAB -->
     <div id="bookSection" class="card" style="display:none;">
-        <h3>Search Pre-order / New Books Status</h3>
+        <h3>Search Pre-order / New Books</h3>
 
         <input type="text" id="bookInput" placeholder="Enter Book Name">
         <button onclick="searchBooks()">Search</button>
@@ -174,16 +157,14 @@
 
 </div>
 
-<!-- FOOTER LEGEND -->
 <footer>
-    <span><b>EDD</b> = Estimeted Delivery Date</span>
-    <span><b>Pre-order,New </b> =Check from serach book Tab</span>
+    <span><b>EDD</b> = Estimated Delivery Date</span>
     <span><b>RTO</b> = Returned to seller</span>
     <span><b>AWB</b> = Tracking ID</span>
 </footer>
 
 <script>
-function switchTab(tab) {
+function switchTab(event, tab) {
     document.getElementById("orderSection").style.display = tab === 'order' ? "block" : "none";
     document.getElementById("bookSection").style.display = tab === 'book' ? "block" : "none";
 
@@ -191,19 +172,21 @@ function switchTab(tab) {
     event.target.classList.add("active");
 }
 
-// ORDER SEARCH (existing API)
+// ======================
+// 🔍 ORDER SEARCH
+// ======================
 async function searchData() {
     let input = document.getElementById("inputData").value.trim();
     let resultDiv = document.getElementById("result");
 
     if (!input) {
-        resultDiv.innerHTML = "<p class='error'>Enter mobile/email</p>";
+        resultDiv.innerHTML = "<p class='error'>Enter mobile/email/order id</p>";
         return;
     }
 
     resultDiv.innerHTML = "<p class='loading'>Searching...</p>";
 
-    let response = await fetch("https://sheet-bot-sfuv.onrender.com/search", {
+    let response = await fetch("/search", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ query: input })
@@ -219,31 +202,38 @@ async function searchData() {
     let html = `<p class='success'><b>${data.count} Order(s)</b></p>`;
 
     data.orders.forEach(order => {
-        let statusClass = "orange";
-        if (order.status.toLowerCase().includes("delivered")) statusClass = "green";
-        else if (order.status.toLowerCase().includes("cancel")) statusClass = "red";
 
         html += `
-    <div class="order-card">
-        <p><b>${order.product}</b></p>
-        <p>Status: ${order.status}</p>
-        <p>Courier: ${order.courier}</p>
-        <p>EDD: ${order.edd || "NA"}</p>
-        <p>AWB: ${order.awb || "NA"}</p>
+        <div class="order-card">
 
-        ${
-            order.tracking_link
-            ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
-            : `<span style="color:gray;">Tracking not available</span>`
-        }
-    </div>
-`;
+            <div class="product">${order.product}</div>
+
+            <p>Status: ${order.status}</p>
+            <p>Courier: ${order.courier}</p>
+            <p>EDD: ${order.edd || "NA"}</p>
+            <p>AWB: ${order.awb || "NA"}</p>
+
+            ${
+                order.tracking_link
+                ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
+                : `<span style="color:gray;">Tracking not available</span>`
+            }
+
+            ${
+                order.rto_reason
+                ? `<div class="rto-box"><b>RTO Reason:</b> ${order.rto_reason}</div>`
+                : ""
+            }
+
+        </div>`;
     });
 
     resultDiv.innerHTML = html;
 }
 
-// BOOK SEARCH (NEW API)
+// ======================
+// 🔍 BOOK SEARCH
+// ======================
 async function searchBooks() {
     let input = document.getElementById("bookInput").value.trim();
     let resultDiv = document.getElementById("bookResult");
@@ -255,7 +245,7 @@ async function searchBooks() {
 
     resultDiv.innerHTML = "<p class='loading'>Searching books...</p>";
 
-    let response = await fetch("https://search-dashboard-uiwb.onrender.com/book-search", {
+    let response = await fetch("/book-search", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ query: input })
@@ -272,11 +262,10 @@ async function searchBooks() {
 
     data.books.forEach(book => {
         html += `
-            <div class="order-card">
-                <p><b>${book.name}</b></p>
-                <p>Estimated Delivery: ${book.edd || "Not Available"}</p>
-            </div>
-        `;
+        <div class="order-card">
+            <div class="product">${book.name}</div>
+            <p>Estimated Delivery: ${book.edd || "Not Available"}</p>
+        </div>`;
     });
 
     resultDiv.innerHTML = html;
@@ -285,5 +274,3 @@ async function searchBooks() {
 
 </body>
 </html>
-```
-
