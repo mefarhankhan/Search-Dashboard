@@ -230,9 +230,8 @@ async function searchData() {
 
     resultDiv.innerHTML = html;
 }
-
 // ======================
-// 🔍 BOOK SEARCH
+// 🔍 BOOK SEARCH (UPDATED)
 // ======================
 async function searchBooks() {
     let input = document.getElementById("bookInput").value.trim();
@@ -245,30 +244,39 @@ async function searchBooks() {
 
     resultDiv.innerHTML = "<p class='loading'>Searching books...</p>";
 
-    let response = await fetch("/book-search", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ query: input })
-    });
+    try {
+        let response = await fetch("/book-search", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ query: input })
+        });
 
-    let data = await response.json();
+        let data = await response.json();
 
-    if (!data.books || data.books.length === 0) {
-        resultDiv.innerHTML = "<p class='error'>No books found</p>";
-        return;
+        if (!data.books || data.books.length === 0) {
+            resultDiv.innerHTML = "<p class='error'>No books found</p>";
+            return;
+        }
+
+        let html = `<p class='success'><b>${data.books.length} Book(s)</b></p>`;
+
+        data.books.forEach(book => {
+            html += `
+            <div class="order-card">
+                <div class="product">${book.name}</div>
+
+                <p><b>Expected Dispatch Time:</b> 
+                    ${book.expected_dispatch_time || "Not Available"}
+                </p>
+            </div>`;
+        });
+
+        resultDiv.innerHTML = html;
+
+    } catch (err) {
+        resultDiv.innerHTML = "<p class='error'>Error fetching data</p>";
+        console.error(err);
     }
-
-    let html = `<p class='success'><b>${data.books.length} Book(s)</b></p>`;
-
-    data.books.forEach(book => {
-        html += `
-        <div class="order-card">
-            <div class="product">${book.name}</div>
-            <p>Estimated Delivery: ${book.edd || "Not Available"}</p>
-        </div>`;
-    });
-
-    resultDiv.innerHTML = html;
 }
 </script>
 
