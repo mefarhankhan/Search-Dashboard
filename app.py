@@ -252,11 +252,11 @@ def book_search():
     results = []
 
     for row in rows:
-        name = str(row.get("pName") or "").lower()
+        name = str(row.get("BookTitleEnglish") or "").lower()
 
         if query in name:
             results.append({
-                "name": row.get("pName"),
+                "name": row.get("BookTitleEnglish"),
                 "expected_dispatch_time": row.get("estimatedDeliveryTime") or "Not Available"
             })
 
