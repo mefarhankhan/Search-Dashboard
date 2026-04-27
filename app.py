@@ -129,7 +129,7 @@ def get_data():
 # ==============================
 def check_redash_order(query):
     try:
-        url = f"{REDASH_BASE_URL}/api/queries/{REDASH_QUERY_ID}/results.json"
+        url = f"{REDASH_BASE_URL}/api/queries/{REDASH_QUERY_ID}/results.json?max_age=0"
         headers = {"Authorization": f"Key {REDASH_API_KEY}"}
 
         res = requests.get(url, headers=headers, timeout=10)
