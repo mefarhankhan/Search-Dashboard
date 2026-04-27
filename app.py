@@ -40,7 +40,7 @@ def last10(val):
     return v[-10:] if v else ""
 
 # ==============================
-# 🚀 FAST CACHE (SAFE)
+# 🚀 FAST CACHE
 # ==============================
 mobile_cache = {}
 email_cache = {}
@@ -59,52 +59,69 @@ def refresh_cache():
         print(f"📊 Rows fetched: {len(records)}")
 
         m_cache, e_cache, o_cache = {}, {}, {}
+        bad_rows = 0
 
         for row in records:
-    try:
-        if not isinstance(row, dict):
-            continue  # skip bad rows
+            try:
+                if not isinstance(row, dict):
+                    bad_rows += 1
+                    continue
 
-        # normalize safely
-        data = {}
-        for k, v in row.items():
-            key = str(k).strip().lower()
-            val = str(v).strip() if v is not None else ""
-            data[key] = val
+                # normalize safely (fix for int issue)
+                data = {}
+                for k, v in row.items():
+                    key = str(k).strip().lower()
+                    val = str(v).strip() if v is not None else ""
+                    data[key] = val
 
-        mobile_raw = data.get("customer mobile", "")
-        email = data.get("customer email", "").lower()
-        order_id = data.get("order id", "").replace(" ", "")
+                mobile_raw = data.get("customer mobile", "")
+                email = data.get("customer email", "").lower()
+                order_id = data.get("order id", "").replace(" ", "")
 
-        mobile = last10(mobile_raw) if mobile_raw else ""
+                mobile = last10(mobile_raw) if mobile_raw else ""
 
-        awb = data.get("awb code") or data.get("awb") or ""
-        status = data.get("status", "")
-        rto_reason = data.get("latest ndr reason", "")
+                awb = data.get("awb code") or data.get("awb") or ""
+                status = data.get("status", "")
+                rto_reason = data.get("latest ndr reason", "")
 
-        order_obj = {
-            "awb": awb or None,
-            "status": status or "Pending",
-            "courier": data.get("courier company") or "Not Assigned",
-            "product": (data.get("product name") or "")[:100],
-            "created_at": data.get("shiprocket created at") or "NA",
-            "edd": data.get("edd") or "NA",
-            "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
-            "rto_reason": rto_reason if "rto" in status.lower() else None
-        }
+                order_obj = {
+                    "awb": awb or None,
+                    "status": status or "Pending",
+                    "courier": data.get("courier company") or "Not Assigned",
+                    "product": data.get("product name") or "",
+                    "created_at": data.get("shiprocket created at") or "NA",
+                    "edd": data.get("edd") or "NA",
+                    "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
+                    "rto_reason": rto_reason if "rto" in status.lower() else None
+                }
 
-        if mobile:
-            m_cache.setdefault(mobile, []).append(order_obj)
+                if mobile:
+                    m_cache.setdefault(mobile, []).append(order_obj)
 
-        if email:
-            e_cache.setdefault(email, []).append(order_obj)
+                if email:
+                    e_cache.setdefault(email, []).append(order_obj)
 
-        if order_id:
-            o_cache.setdefault(order_id, []).append(order_obj)
+                if order_id:
+                    o_cache.setdefault(order_id, []).append(order_obj)
+
+            except Exception as e:
+                bad_rows += 1
+                print("⚠️ Skipping bad row:", row, "| Error:", str(e))
+
+        # thread-safe swap
+        with lock:
+            mobile_cache = m_cache
+            email_cache = e_cache
+            order_cache = o_cache
+            last_updated = time.time()
+
+        print(f"✅ Cache ready | Mobile: {len(m_cache)} Email: {len(e_cache)} Order: {len(o_cache)}")
+        print(f"⚠️ Bad rows skipped: {bad_rows}")
 
     except Exception as e:
-        print("⚠️ Skipping bad row:", row, "| Error:", str(e))
-        
+        print("❌ Cache error:", str(e))
+
+
 def refresh_cache_async():
     threading.Thread(target=refresh_cache, daemon=True).start()
 
@@ -112,7 +129,6 @@ def refresh_cache_async():
 def get_data():
     if time.time() - last_updated > CACHE_TTL:
         refresh_cache_async()
-
     return mobile_cache, email_cache, order_cache
 
 # ==============================
@@ -164,7 +180,7 @@ def search():
         return jsonify({"status": "Invalid query"})
 
     q_mobile = last10(query)
-    q_email = query.strip().lower()
+    q_email = query.lower()
     q_order = query.replace(" ", "")
 
     m_cache, e_cache, o_cache = get_data()
@@ -175,7 +191,7 @@ def search():
         or o_cache.get(q_order)
     )
 
-    # DEBUG (remove later if needed)
+    # debug logs
     print("🔍 Query:", query)
     print("➡️ Mobile match:", bool(m_cache.get(q_mobile)))
     print("➡️ Email match:", bool(e_cache.get(q_email)))
