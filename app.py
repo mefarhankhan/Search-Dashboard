@@ -40,14 +40,14 @@ def last10(val):
     return v[-10:] if len(v) >= 10 else v
 
 def get_short_product(name):
-    return name[:40] if name else ""
+    return name[:100] if name else ""   # ✅ Increased limit
 
 # ==============================
 # 🚀 SHEET CACHE
 # ==============================
 cache = {}
 last_updated = 0
-CACHE_TTL = 1800
+CACHE_TTL = 1800  # 30 min
 
 def refresh_cache():
     global cache, last_updated
@@ -55,17 +55,37 @@ def refresh_cache():
         records = sheet.get_all_records()
         new_cache = {}
 
+        print(f"📊 Total rows fetched: {len(records)}")
+
         for data in records:
-            mobile_raw = str(data.get("Customer Mobile", "")).strip()
-            email = str(data.get("Customer Email", "")).strip().lower()
-            order_id = str(data.get("Order ID", "")).strip()
+            # ✅ Normalize keys
+            normalized = {k.strip().lower(): v for k, v in data.items()}
+
+            mobile_raw = str(
+                normalized.get("customer mobile") or
+                normalized.get("mobile") or
+                ""
+            ).strip()
+
+            email = str(
+                normalized.get("customer email") or
+                normalized.get("email") or
+                ""
+            ).strip().lower()
+
+            order_id = str(
+                normalized.get("order id") or
+                ""
+            ).strip().replace(" ", "")
 
             m10 = last10(mobile_raw)
 
             if m10:
                 new_cache.setdefault(m10, []).append(data)
+
             if email:
                 new_cache.setdefault(email, []).append(data)
+
             if order_id:
                 new_cache.setdefault(order_id, []).append(data)
 
@@ -90,7 +110,7 @@ def get_cached_data():
 # ==============================
 redash_cache = []
 redash_last_updated = 0
-REDASH_CACHE_TTL = 300
+REDASH_CACHE_TTL = 300  # 5 min
 
 def get_redash_data():
     global redash_cache, redash_last_updated
@@ -118,11 +138,11 @@ def get_redash_data():
         return []
 
 # ==============================
-# 🏠 HOME (DASHBOARD UI)
+# 🏠 HOME
 # ==============================
 @app.route("/")
 def home():
-    return render_template("dashboard.html")   # ⚠️ MUST match filename exactly
+    return render_template("dashboard.html")
 
 # ==============================
 # 🔍 ORDER SEARCH
@@ -137,7 +157,7 @@ def search():
 
     query_mobile = last10(query_raw)
     query_email = str(query_raw).strip().lower()
-    query_order = str(query_raw).strip()
+    query_order = str(query_raw).strip().replace(" ", "")
 
     data_cache = get_cached_data()
 
@@ -151,19 +171,40 @@ def search():
         orders = []
 
         for row in rows:
-            awb = str(row.get("AWB Code") or row.get("AWB") or "").strip()
+            normalized = {k.strip().lower(): v for k, v in row.items()}
+
+            awb = str(
+                normalized.get("awb code") or
+                normalized.get("awb") or
+                ""
+            ).strip()
+
+            status = str(normalized.get("status") or "").strip()
+
+            rto_reason = str(
+                normalized.get("latest ndr reason") or
+                ""
+            ).strip()
+
+            is_rto = "rto" in status.lower()
 
             orders.append({
                 "awb": awb or None,
-                "status": row.get("Status", "").strip() or "Pending",
-                "courier": row.get("Courier Company", "").strip() or "Not Assigned",
-                "product": get_short_product(row.get("Product Name", "")),
-                "created_at": row.get("Shiprocket Created At", "") or "NA",
-                "edd": row.get("EDD") or "NA",
-                "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None
+                "status": status or "Pending",
+                "courier": normalized.get("courier company", "") or "Not Assigned",
+                "product": get_short_product(normalized.get("product name", "")),
+                "created_at": normalized.get("shiprocket created at", "") or "NA",
+                "edd": normalized.get("edd") or "NA",
+                "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
+
+                # ✅ RTO Reason
+                "rto_reason": rto_reason if is_rto and rto_reason else None
             })
 
-        return jsonify({"count": len(orders), "orders": list(reversed(orders))})
+        return jsonify({
+            "count": len(orders),
+            "orders": list(reversed(orders))
+        })
 
     return jsonify({"status": "Not Found"})
 
