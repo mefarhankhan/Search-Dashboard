@@ -28,15 +28,16 @@ sheet = client.open("BOOK QUERIES").worksheet("All orders")
 # ==============================
 # 🔴 REDASH CONFIG
 # ==============================
-REDASH_API_KEY = os.environ.get("REDASH_API_KEY_1")
-REDASH_API_KEY = os.environ.get("REDASH_API_KEY_2")
+REDASH_API_KEY_1 = os.environ.get("REDASH_API_KEY_1")  # Order fallback
+REDASH_API_KEY_2 = os.environ.get("REDASH_API_KEY_2")  # Book search
 
-# 🔹 Query 1 → Order fallback (preorder tracking)
+REDASH_BASE_URL = "https://data.testbook.com"
+
+# 🔹 Query 1 → Order fallback
 REDASH_QUERY_ID = "19923"
 
 # 🔹 Query 2 → Book search
-BOOK_SEARCH_QUERY_ID = "17893"  
-REDASH_BASE_URL = "https://data.testbook.com"
+BOOK_SEARCH_QUERY_ID = "17893"
 
 # ==============================
 # ⚡ HELPERS
