@@ -36,11 +36,11 @@ REDASH_BASE_URL = "https://data.testbook.com"
 # ⚡ HELPERS
 # ==============================
 def last10(val):
-    v = str(val).replace(" ", "").replace("+", "")
-    return v[-10:]
+    v = str(val).strip().replace(" ", "").replace("+", "")
+    return v[-10:] if v else ""
 
 # ==============================
-# 🚀 ULTRA FAST CACHE
+# 🚀 FAST CACHE (SAFE)
 # ==============================
 mobile_cache = {}
 email_cache = {}
@@ -61,14 +61,16 @@ def refresh_cache():
         m_cache, e_cache, o_cache = {}, {}, {}
 
         for row in records:
-            # normalize once
             data = {k.strip().lower(): v for k, v in row.items()}
 
-            mobile = last10(data.get("customer mobile", ""))
-            email = str(data.get("customer email", "")).strip().lower()
-            order_id = str(data.get("order id", "")).replace(" ", "")
+            # SAFE extraction
+            mobile_raw = str(data.get("customer mobile") or "").strip()
+            email = str(data.get("customer email") or "").strip().lower()
+            order_id = str(data.get("order id") or "").strip().replace(" ", "")
 
-            # pre-build response object (🔥 no processing later)
+            mobile = last10(mobile_raw) if mobile_raw else ""
+
+            # build order object
             awb = str(data.get("awb code") or data.get("awb") or "").strip()
             status = str(data.get("status") or "").strip()
             rto_reason = str(data.get("latest ndr reason") or "").strip()
@@ -86,19 +88,21 @@ def refresh_cache():
 
             if mobile:
                 m_cache.setdefault(mobile, []).append(order_obj)
+
             if email:
                 e_cache.setdefault(email, []).append(order_obj)
+
             if order_id:
                 o_cache.setdefault(order_id, []).append(order_obj)
 
-        # atomic swap (thread safe)
+        # atomic update
         with lock:
             mobile_cache = m_cache
             email_cache = e_cache
             order_cache = o_cache
             last_updated = time.time()
 
-        print(f"✅ Cache ready: {len(m_cache)} mobiles")
+        print(f"✅ Cache ready | Mobile: {len(m_cache)} Email: {len(e_cache)} Order: {len(o_cache)}")
 
     except Exception as e:
         print("❌ Cache error:", str(e))
@@ -115,7 +119,7 @@ def get_data():
     return mobile_cache, email_cache, order_cache
 
 # ==============================
-# 🔴 REDASH CACHE (LIGHT)
+# 🔴 REDASH CACHE
 # ==============================
 redash_cache = []
 redash_last_updated = 0
@@ -152,7 +156,7 @@ def home():
     return render_template("dashboard.html")
 
 # ==============================
-# 🔍 SEARCH (ULTRA FAST ⚡)
+# 🔍 SEARCH
 # ==============================
 @app.route("/search", methods=["POST"])
 def search():
@@ -163,7 +167,7 @@ def search():
         return jsonify({"status": "Invalid query"})
 
     q_mobile = last10(query)
-    q_email = query.lower()
+    q_email = query.strip().lower()
     q_order = query.replace(" ", "")
 
     m_cache, e_cache, o_cache = get_data()
@@ -173,6 +177,12 @@ def search():
         or e_cache.get(q_email)
         or o_cache.get(q_order)
     )
+
+    # DEBUG (remove later if needed)
+    print("🔍 Query:", query)
+    print("➡️ Mobile match:", bool(m_cache.get(q_mobile)))
+    print("➡️ Email match:", bool(e_cache.get(q_email)))
+    print("➡️ Order match:", bool(o_cache.get(q_order)))
 
     if rows:
         return jsonify({
