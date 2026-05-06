@@ -26,7 +26,7 @@ client = gspread.authorize(creds)
 sheet = client.open("BOOK QUERIES").worksheet("All orders")
 
 # ==============================
-# 🔴 REDASH CONFIG
+# 🔴 REDASH CONFIG (UNCHANGED)
 # ==============================
 REDASH_API_KEY_1 = os.environ.get("REDASH_API_KEY_1")
 REDASH_API_KEY_2 = os.environ.get("REDASH_API_KEY_2")
@@ -44,14 +44,13 @@ def last10(val):
     return v[-10:] if v else ""
 
 def normalize_id(val):
-    """
-    Handles Mongo _id formats:
-    - string id
-    - {"$oid": "..."}
-    """
     if isinstance(val, dict):
         return val.get("$oid", "")
     return str(val).strip().replace(" ", "")
+
+# 🔥 NEW: Strong order ID normalize
+def normalize_order_id(val):
+    return str(val).strip().lower().replace(" ", "")
 
 # ==============================
 # 🚀 SHEET CACHE
@@ -79,13 +78,17 @@ def refresh_cache():
                 if not isinstance(row, dict):
                     continue
 
+                # normalize keys
                 data = {}
                 for k, v in row.items():
                     data[str(k).strip().lower()] = str(v).strip() if v else ""
 
                 mobile = last10(data.get("customer mobile", ""))
                 email = data.get("customer email", "").lower()
-                order_id = data.get("order id", "").replace(" ", "")
+
+                # 🔥 FIXED ORDER ID HANDLING
+                order_id_raw = data.get("order id", "")
+                order_id = normalize_order_id(order_id_raw)
 
                 awb = data.get("awb code") or data.get("awb") or ""
                 status = data.get("status", "")
@@ -106,6 +109,8 @@ def refresh_cache():
                     m_cache.setdefault(mobile, []).append(order_obj)
                 if email:
                     e_cache.setdefault(email, []).append(order_obj)
+
+                # ✅ store order id
                 if order_id:
                     o_cache.setdefault(order_id, []).append(order_obj)
 
@@ -134,7 +139,7 @@ def get_data():
     return mobile_cache, email_cache, order_cache
 
 # ==============================
-# 🔴 REDASH FALLBACK (ORDER FIXED)
+# 🔴 REDASH FALLBACK (UNCHANGED)
 # ==============================
 def check_redash_order(query):
     try:
@@ -147,10 +152,7 @@ def check_redash_order(query):
         q = last10(query)
 
         for row in rows:
-
-            # 🔥 FIX: handle both string + Mongo ObjectId format
             raw_id = normalize_id(row.get("_id", ""))
-
             mobile = last10(row.get("mobile", ""))
 
             if q == mobile or query == raw_id:
@@ -172,7 +174,7 @@ def check_redash_order(query):
         return None
 
 # ==============================
-# 🔴 BOOK CACHE
+# 🔴 BOOK CACHE (UNCHANGED)
 # ==============================
 book_cache = []
 book_last_updated = 0
@@ -209,7 +211,7 @@ def home():
     return render_template("dashboard.html")
 
 # ==============================
-# 🔍 ORDER SEARCH
+# 🔍 ORDER SEARCH (FIXED)
 # ==============================
 @app.route("/search", methods=["POST"])
 def search():
@@ -221,7 +223,7 @@ def search():
 
     q_mobile = last10(query)
     q_email = query.lower()
-    q_order = query.replace(" ", "")
+    q_order = normalize_order_id(query)
 
     m_cache, e_cache, o_cache = get_data()
 
@@ -231,13 +233,20 @@ def search():
         or o_cache.get(q_order)
     )
 
+    # 🔥 PARTIAL MATCH (IMPORTANT)
+    if not rows:
+        for key, value in o_cache.items():
+            if q_order in key:
+                rows = value
+                break
+
     if rows:
         return jsonify({
             "count": len(rows),
             "orders": list(reversed(rows))
         })
 
-    # 🔴 REDASH fallback
+    # fallback unchanged
     redash_result = check_redash_order(query)
 
     if redash_result:
@@ -249,7 +258,7 @@ def search():
     return jsonify({"status": "Not Found"})
 
 # ==============================
-# 🔍 BOOK SEARCH
+# 🔍 BOOK SEARCH (UNCHANGED)
 # ==============================
 @app.route("/book-search", methods=["POST"])
 def book_search():
