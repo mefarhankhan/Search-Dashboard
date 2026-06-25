@@ -11,6 +11,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"}), 200
+
+
 # ==============================
 # 🔐 GOOGLE SHEET SETUP
 # ==============================
