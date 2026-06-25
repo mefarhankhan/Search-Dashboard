@@ -290,7 +290,10 @@ def book_search():
 # ==============================
 # 🚀 START
 # ==============================
-refresh_cache()
+threading.Thread(
+    target=refresh_cache,
+    daemon=True
+).start()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
