@@ -100,15 +100,26 @@ def refresh_cache():
                 rto_reason = data.get("latest ndr reason", "")
 
                 order_obj = {
-                    "awb": awb or None,
-                    "status": status or "Pending",
-                    "courier": data.get("courier company") or "Not Assigned",
-                    "product": data.get("product name") or "",
-                    "created_at": data.get("shiprocket created at") or "NA",
-                    "edd": data.get("edd") or "NA",
-                    "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
-                    "rto_reason": rto_reason if "rto" in status.lower() else None
-                }
+    "awb": awb or None,
+    "status": status or "Pending",
+    "courier": data.get("courier company") or "Not Assigned",
+    "product": data.get("product name") or "",
+    "created_at": data.get("shiprocket created at") or "NA",
+    "edd": data.get("edd") or "NA",
+
+    "customer_name": data.get("customer name") or "",
+    "customer_email": data.get("customer email") or "",
+    "customer_mobile": data.get("customer mobile") or "",
+
+    "address_line1": data.get("address line 1") or "",
+    "address_line2": data.get("address line 2") or "",
+    "city": data.get("address city") or "",
+    "state": data.get("address state") or "",
+    "pincode": data.get("address pincode") or "",
+
+    "tracking_link": f"https://shiprocket.co/tracking/{awb}" if awb else None,
+    "rto_reason": rto_reason if "rto" in status.lower() else None
+}
 
                 if mobile:
                     m_cache.setdefault(mobile, []).append(order_obj)
