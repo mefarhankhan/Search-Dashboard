@@ -279,6 +279,18 @@ async function searchBooks() {
         console.error(err);
     }
 }
+document.getElementById("inputData").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        searchData();
+    }
+});
+
+document.getElementById("bookInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        searchBooks();
+    }
+});
+    
 </script>
 
 </body>
