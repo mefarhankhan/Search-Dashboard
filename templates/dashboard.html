@@ -146,6 +146,31 @@
             font-size: 13px;
             border-radius: 5px;
         }
+        .customer-card {
+    border: 1px solid #d9e7ff;
+    background: #f8fbff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.multi-address-note {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 5px;
+    color: #856404;
+}
+
+.delivery-address {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+    border-radius: 5px;
+    font-size: 13px;
+}
 
         .loading { color: orange; }
         .error { color: red; }
@@ -242,6 +267,15 @@ async function searchData() {
         resultDiv.innerHTML = "<p class='error'>No orders found</p>";
         return;
     }
+    const uniqueAddresses = new Set(
+    data.orders.map(order =>
+        `${order.address_line1 || ""}|${order.address_line2 || ""}|${order.city || ""}|${order.state || ""}|${order.pincode || ""}`
+    )
+);
+
+const hasMultipleAddresses = uniqueAddresses.size > 1;
+
+const customer = data.orders[0];
 
     let html = `<p class='success'><b>${data.count} Order(s)</b></p>`;
 
@@ -249,25 +283,46 @@ async function searchData() {
 
 html += `
 <div class="customer-card">
+
     <h3>👤 Customer Details</h3>
 
     <p><b>Name:</b> ${customer.customer_name || "NA"}</p>
     <p><b>Mobile:</b> ${customer.customer_mobile || "NA"}</p>
     <p><b>Email:</b> ${customer.customer_email || "NA"}</p>
 
-    <p>
-        <b>Address:</b><br>
-        ${customer.address_line1 || ""}
-        ${customer.address_line2 ? "<br>" + customer.address_line2 : ""}
-        <br>
-        ${customer.city || ""}
-        ${customer.state ? ", " + customer.state : ""}
-        ${customer.pincode ? " - " + customer.pincode : ""}
-    </p>
+    ${
+        hasMultipleAddresses
+        ? `
+        <div class="multi-address-note">
+            ⚠ Multiple delivery addresses found.
+            Address details are shown with each order.
+        </div>
+        `
+        : `
+        <p>
+            <b>Address:</b><br>
+            ${customer.address_line1 || ""}
+            ${customer.address_line2 ? "<br>" + customer.address_line2 : ""}
+            <br>
+            ${customer.city || ""}
+            ${customer.state ? ", " + customer.state : ""}
+            ${customer.pincode ? " - " + customer.pincode : ""}
+        </p>
+        `
+    }
+
 </div>
 `;
 
     data.orders.forEach(order => {
+
+        const currentAddress = `
+${order.address_line1 || ""}
+${order.address_line2 || ""}
+${order.city || ""}
+${order.state || ""}
+${order.pincode || ""}
+`;
 
         html += `
         <div class="order-card">
@@ -278,6 +333,24 @@ html += `
             <p>Courier: ${order.courier}</p>
             <p>EDD: ${order.edd || "NA"}</p>
             <p>AWB: ${order.awb || "NA"}</p>
+
+            ${
+        hasMultipleAddresses
+        ? `
+        <div class="delivery-address">
+            <b>🚚 Delivery Address</b><br>
+
+            ${order.address_line1 || ""}
+            ${order.address_line2 ? "<br>" + order.address_line2 : ""}
+            <br>
+
+            ${order.city || ""}
+            ${order.state ? ", " + order.state : ""}
+            ${order.pincode ? " - " + order.pincode : ""}
+        </div>
+        `
+        : ""
+    }
 
             ${
                 order.tracking_link
