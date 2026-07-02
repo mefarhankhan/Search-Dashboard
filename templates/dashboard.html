@@ -85,9 +85,9 @@
             margin-bottom: 12px;
             background: #fff;
             .result-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
+           display: flex;
+           gap: 15px;
+         margin-bottom: 15px;
 }
 
 .customer-card,
@@ -169,7 +169,7 @@
     background: #f8f9fa;
     border-left: 4px solid #007bff;
     border-radius: 5px;
-    font-size: 13px;
+    font-size: 15px;
 }
 
         .loading { color: orange; }
@@ -193,7 +193,7 @@
 <body>
 
 <header>
-    📊 Order Tracking & Pre-order Dashboard
+    📊 Shipment deatils and Book status Dashboard
 </header>
 
 <div class="tabs">
@@ -326,6 +326,7 @@ ${order.pincode || ""}
 
         html += `
         <div class="order-card">
+        <h3>📦Shipment Details</h3>
 
             <div class="product">${order.product}</div>
 
