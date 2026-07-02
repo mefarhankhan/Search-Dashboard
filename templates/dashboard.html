@@ -84,6 +84,36 @@
             padding: 15px;
             margin-bottom: 12px;
             background: #fff;
+            .result-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.customer-card,
+.shipment-card {
+    flex: 1;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 15px;
+    background: #fff;
+}
+
+.customer-card {
+    background: #f8fafc;
+}
+
+.card-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+@media (max-width: 768px) {
+    .result-row {
+        flex-direction: column;
+    }
+}
         }
 
         .product {
@@ -262,14 +292,52 @@ async function searchBooks() {
         let html = `<p class='success'><b>${data.books.length} Book(s)</b></p>`;
 
         data.books.forEach(book => {
-            html += `
-            <div class="order-card">
-                <div class="product">${book.name}</div>
+           html += `
+<div class="result-row">
 
-                <p><b>Expected Dispatch Time:</b> 
-                    ${book.expected_dispatch_time || "Not Available"}
-                </p>
-            </div>`;
+    <div class="customer-card">
+        <div class="card-title">👤 Customer Details</div>
+
+        <p><b>Name:</b> ${order.customer_name || "NA"}</p>
+        <p><b>Email:</b> ${order.customer_email || "NA"}</p>
+        <p><b>Mobile:</b> ${order.customer_mobile || "NA"}</p>
+
+        <p>
+            <b>Address:</b><br>
+            ${order.address_line1 || ""}
+            ${order.address_line2 ? "<br>" + order.address_line2 : ""}
+            ${order.city ? "<br>" + order.city : ""}
+            ${order.state ? ", " + order.state : ""}
+            ${order.pincode ? " - " + order.pincode : ""}
+        </p>
+    </div>
+
+    <div class="shipment-card">
+
+        <div class="card-title">📦 Shipment Details</div>
+
+        <div class="product">${order.product}</div>
+
+        <p><b>Status:</b> ${order.status}</p>
+        <p><b>Courier:</b> ${order.courier}</p>
+        <p><b>EDD:</b> ${order.edd || "NA"}</p>
+        <p><b>AWB:</b> ${order.awb || "NA"}</p>
+
+        ${
+            order.tracking_link
+            ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
+            : `<span style="color:gray;">Tracking not available</span>`
+        }
+
+        ${
+            order.rto_reason
+            ? `<div class="rto-box"><b>RTO Reason:</b> ${order.rto_reason}</div>`
+            : ""
+        }
+
+    </div>
+
+</div>`;
         });
 
         resultDiv.innerHTML = html;
