@@ -116,6 +116,19 @@
 }
         }
 
+        .customer-card {
+    border: 1px solid #d9e7ff;
+    background: #f8fbff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.customer-card h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+
         .product {
             font-weight: bold;
             margin-bottom: 5px;
@@ -231,6 +244,28 @@ async function searchData() {
     }
 
     let html = `<p class='success'><b>${data.count} Order(s)</b></p>`;
+
+    const customer = data.orders[0];
+
+html += `
+<div class="customer-card">
+    <h3>👤 Customer Details</h3>
+
+    <p><b>Name:</b> ${customer.customer_name || "NA"}</p>
+    <p><b>Mobile:</b> ${customer.customer_mobile || "NA"}</p>
+    <p><b>Email:</b> ${customer.customer_email || "NA"}</p>
+
+    <p>
+        <b>Address:</b><br>
+        ${customer.address_line1 || ""}
+        ${customer.address_line2 ? "<br>" + customer.address_line2 : ""}
+        <br>
+        ${customer.city || ""}
+        ${customer.state ? ", " + customer.state : ""}
+        ${customer.pincode ? " - " + customer.pincode : ""}
+    </p>
+</div>
+`;
 
     data.orders.forEach(order => {
 
