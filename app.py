@@ -176,7 +176,7 @@ def check_redash_order(query):
                     "Name":row.get("student") or "Not Available",
                     "mobile":row.get("mobile") or "Not Available",
                     "E- mail":row.get("email") or "Not Available",
-                    "Address"row.get("fullAddress") or "Not Available",
+                    "Address":row.get("fullAddress") or "Not Available",
                     "awb": None,
                     "status": row.get("shippingStatus") or "Preorder",
                     "courier": "Not Available",
