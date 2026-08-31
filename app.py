@@ -173,10 +173,10 @@ def check_redash_order(query):
 
             if q == mobile or query == raw_id:
                 return {
-                    "Name":row.get("student") or "Not Available",
-                    "mobile":row.get("mobile") or "Not Available",
-                    "E- mail":row.get("email") or "Not Available",
-                    "Address":row.get("fullAddress") or "Not Available",
+                    "customer_name":row.get("student") or "Not Available",
+                    "customer_mobile":row.get("mobile") or "Not Available",
+                    "customer_email":row.get("email") or "Not Available",
+                    "address_line1":row.get("fullAddress") or "Not Available",
                     "awb": None,
                     "status": row.get("shippingStatus") or "Preorder",
                     "courier": "Not Available",
