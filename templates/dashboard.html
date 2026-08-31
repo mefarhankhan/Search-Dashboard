@@ -401,6 +401,16 @@ async function searchBooks() {
         let html = `<p class='success'><b>${data.books.length} Book(s)</b></p>`;
 
         data.books.forEach(book => {
+    html += `
+        <div class="order-card">
+            <h3>📚 Book Details</h3>
+            <div class="product">${BookTitleEnglish || "Not Available"}</div>
+            <p><b>Expected Dispatch:</b> ${estimatedDeliveryTime || "Not Available"}</p>
+        </div>
+    `;
+});
+
+       /* data.books.forEach(book => {
            html += `
 <div class="result-row">
 
@@ -447,7 +457,8 @@ async function searchBooks() {
     </div>
 
 </div>`;
-        });
+        });*/
+        
 
         resultDiv.innerHTML = html;
 
