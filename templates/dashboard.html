@@ -1,485 +1,830 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Order & Book Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Orders & Books | Testbook</title>
 
     <style>
+        :root {
+            --black: #171522;
+            --sky: #00b8db;
+            --sky-dark: #007b96;
+            --white: #ffffff;
+            --background: #f4f8fb;
+            --muted: #647383;
+            --border: #e2eaf0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: "Segoe UI", Arial;
-            background: #f4f6f9;
+            background: var(--background);
+            color: var(--black);
+            font-family: "Segoe UI", Arial, sans-serif;
+            line-height: 1.6;
         }
 
         header {
-            background: linear-gradient(90deg, #007bff, #0056b3);
-            color: white;
-            padding: 18px;
-            font-size: 22px;
-            text-align: center;
-            font-weight: bold;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
         }
 
-        .track-btn {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 6px 12px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        .header-inner {
+            max-width: 1080px;
+            margin: auto;
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 190px;
+            max-width: 50%;
+            height: auto;
+        }
+
+        .header-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero {
+            max-width: 1080px;
+            margin: auto;
+            padding: 44px 24px 30px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: var(--sky-dark);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.2;
+            letter-spacing: -0.035em;
+        }
+
+        .hero-description {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .workspace {
+            max-width: 1032px;
+            margin: 0 auto 36px;
+            overflow: hidden;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgb(23 21 34 / 4%);
         }
 
         .tabs {
             display: flex;
-            justify-content: center;
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .tab {
-            padding: 14px 25px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .tab.active {
-            border-bottom: 3px solid #007bff;
-            color: #007bff;
-        }
-
-        .container {
-            width: 95%;
-            max-width: 900px;
-            margin: 30px auto;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
-
-        input {
-            width: 70%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            margin-right: 10px;
+            gap: 28px;
+            padding: 0 32px;
+            border-bottom: 1px solid var(--border);
         }
 
         button {
-            padding: 12px 18px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            font: inherit;
             cursor: pointer;
         }
 
+        .tab {
+            padding: 19px 0 16px;
+            background: transparent;
+            border: 0;
+            border-bottom: 3px solid transparent;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .tab.active {
+            color: var(--black);
+            border-bottom-color: var(--sky);
+        }
+
+        .tab:hover {
+            color: var(--sky-dark);
+        }
+
+        .card {
+            padding: 30px 32px 34px;
+        }
+
+        .card > h2 {
+            margin: 0 0 5px;
+            font-size: 22px;
+            letter-spacing: -0.025em;
+        }
+
+        .section-description {
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .search-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        input {
+            width: 100%;
+            min-width: 0;
+            padding: 14px 16px;
+            border: 1px solid #cdd9e1;
+            border-radius: 9px;
+            background: #fbfdfe;
+            color: var(--black);
+            font: inherit;
+            font-size: 14px;
+        }
+
+        input::placeholder {
+            color: #7b8895;
+        }
+
+        .search-button {
+            flex-shrink: 0;
+            padding: 13px 26px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--black);
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .search-button:hover {
+            background: #30303e;
+        }
+
+        :where(button, input, a):focus-visible {
+            outline: 3px solid rgb(0 184 219 / 45%);
+            outline-offset: 3px;
+        }
+
+        .input-hint {
+            margin: 9px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .result {
+            overflow-wrap: anywhere;
+        }
+
+        .result:not(:empty) {
+            margin-top: 26px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border);
+        }
+
+        .result-count {
+            margin: 0 0 16px;
+            color: var(--sky-dark);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .customer-card,
         .order-card {
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 12px;
-            background: #fff;
-            .result-row {
-           display: flex;
-           gap: 15px;
-         margin-bottom: 15px;
-}
-
-.customer-card,
-.shipment-card {
-    flex: 1;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    padding: 15px;
-    background: #fff;
-}
-
-.customer-card {
-    background: #f8fafc;
-}
-
-.card-title {
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #007bff;
-}
-
-@media (max-width: 768px) {
-    .result-row {
-        flex-direction: column;
-    }
-}
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 16px;
         }
 
         .customer-card {
-    border: 1px solid #d9e7ff;
-    background: #f8fbff;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-}
+            background: #f1fbfe;
+            border-color: #ccebf3;
+        }
 
-.customer-card h3 {
-    margin-top: 0;
-    color: #007bff;
-}
+        .order-card {
+            background: var(--white);
+        }
+
+        .order-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .customer-card h3,
+        .order-card h3 {
+            margin: 0 0 14px;
+            font-size: 16px;
+        }
+
+        .customer-card p,
+        .order-card p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
 
         .product {
-            font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 700;
+        }
 
-            /* 👇 Handles long names safely */
-            word-wrap: break-word;
+        .track-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 9px 16px;
+            border-radius: 7px;
+            background: var(--black);
+            color: var(--white);
+            font-size: 13px;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .track-btn:hover {
+            background: var(--sky-dark);
+        }
+
+        .tracking-unavailable {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .delivery-address {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-left: 3px solid var(--sky);
+            border-radius: 5px;
+            background: #f5fafc;
+            font-size: 14px;
+        }
+
+        .multi-address-note,
+        .rto-box {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-left: 3px solid #c28c00;
+            border-radius: 6px;
+            background: #fff8e6;
+            color: #785800;
+            font-size: 13px;
         }
 
         .rto-box {
-            margin-top: 8px;
-            padding: 8px;
-            background: #ffe6e6;
-            border-left: 4px solid red;
-            color: #b30000;
-            font-size: 13px;
-            border-radius: 5px;
+            background: #fff1f1;
+            border-color: #db4545;
+            color: #a12d2d;
         }
-        .customer-card {
-    border: 1px solid #d9e7ff;
-    background: #f8fbff;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-}
 
-.multi-address-note {
-    margin-top: 10px;
-    padding: 10px;
-    background: #fff3cd;
-    border-left: 4px solid #ffc107;
-    border-radius: 5px;
-    color: #856404;
-}
+        .loading,
+        .error {
+            margin: 0;
+            padding: 12px 14px;
+            border-radius: 7px;
+            font-size: 14px;
+        }
 
-.delivery-address {
-    margin-top: 10px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-left: 4px solid #007bff;
-    border-radius: 5px;
-    font-size: 15px;
-}
+        .loading {
+            background: #edfaff;
+            color: var(--sky-dark);
+        }
 
-        .loading { color: orange; }
-        .error { color: red; }
-        .success { color: green; }
+        .error {
+            background: #fff1f1;
+            color: #a12d2d;
+        }
 
         footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: #222;
-            color: white;
-            padding: 12px;
-            font-size: 13px;
+            max-width: 1032px;
+            margin: auto;
+            padding-bottom: 28px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .footer-title {
+            margin: 0 0 12px;
+            color: var(--black);
+            font-weight: 650;
+        }
+
+        .footer-items {
             display: flex;
-            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 12px 28px;
+        }
+
+        footer b {
+            color: #394756;
+        }
+
+        .footer-bottom {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 1100px) {
+            .workspace {
+                margin-right: 24px;
+                margin-left: 24px;
+            }
+
+            footer {
+                margin-right: 24px;
+                margin-left: 24px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header-inner {
+                padding: 18px 20px;
+            }
+
+            .brand-logo {
+                width: 148px;
+            }
+
+            .header-label {
+                max-width: 100px;
+                font-size: 9px;
+                text-align: right;
+            }
+
+            .hero {
+                padding: 30px 20px 24px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+            }
+
+            .workspace {
+                margin: 0 16px 30px;
+                border-radius: 13px;
+            }
+
+            .tabs {
+                padding: 0 20px;
+                gap: 26px;
+            }
+
+            .card {
+                padding: 24px 20px;
+            }
+
+            .search-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .search-button {
+                width: 100%;
+            }
+
+            .customer-card,
+            .order-card {
+                padding: 16px;
+            }
+
+            footer {
+                margin: 0 20px;
+            }
+
+            .footer-items {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
     </style>
 </head>
 
 <body>
-
-<header>
-    📊 Shipment deatils and Book status Dashboard
-</header>
-
-<div class="tabs">
-    <div class="tab active" onclick="switchTab(event, 'order')">Track Order</div>
-    <div class="tab" onclick="switchTab(event, 'book')">Search Books</div>
-</div>
-
-<div class="container">
-
-    <!-- ORDER TAB -->
-    <div id="orderSection" class="card">
-        <h3>Track Your Order</h3>
-
-        <input type="text" id="inputData" placeholder="Enter Mobile / Email / Order ID">
-        <button onclick="searchData()">Search</button>
-
-        <div id="result" class="result"></div>
-    </div>
-
-    <!-- BOOK TAB -->
-    <div id="bookSection" class="card" style="display:none;">
-        <h3>Search Pre-order / New Books</h3>
-
-        <input type="text" id="bookInput" placeholder="Enter Book Name">
-        <button onclick="searchBooks()">Search</button>
-
-        <div id="bookResult" class="result"></div>
-    </div>
-
-</div>
-
-<footer>
-    <span><b>EDD</b> = Estimated Delivery Date</span>
-    <span><b>RTO</b> = Returned to seller</span>
-    <span><b>AWB</b> = Tracking ID</span>
-    <span><b>Pre order/New </b> = Check in search book</span>
-</footer>
-
-<script>
-function switchTab(event, tab) {
-    document.getElementById("orderSection").style.display = tab === 'order' ? "block" : "none";
-    document.getElementById("bookSection").style.display = tab === 'book' ? "block" : "none";
-
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    event.target.classList.add("active");
-}
-
-// ======================
-// 🔍 ORDER SEARCH
-// ======================
-async function searchData() {
-    let input = document.getElementById("inputData").value.trim();
-    let resultDiv = document.getElementById("result");
-
-    if (!input) {
-        resultDiv.innerHTML = "<p class='error'>Enter mobile/email/order id</p>";
-        return;
-    }
-
-    resultDiv.innerHTML = "<p class='loading'>Searching...</p>";
-
-    let response = await fetch("/search", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ query: input })
-    });
-
-    let data = await response.json();
-
-    if (!data.orders || data.orders.length === 0) {
-        resultDiv.innerHTML = "<p class='error'>No orders found</p>";
-        return;
-    }
-    const uniqueAddresses = new Set(
-    data.orders.map(order =>
-        `${order.address_line1 || ""}|${order.address_line2 || ""}|${order.city || ""}|${order.state || ""}|${order.pincode || ""}`
-    )
-);
-
-const hasMultipleAddresses = uniqueAddresses.size > 1;
-
-const customer = data.orders[0];
-
-    let html = `<p class='success'><b>${data.count} Order(s)</b></p>`;
-
-    
-
-html += `
-<div class="customer-card">
-
-    <h3>👤 Customer Details</h3>
-
-    <p><b>Name:</b> ${customer.customer_name || "NA"}</p>
-    <p><b>Mobile:</b> ${customer.customer_mobile || "NA"}</p>
-    <p><b>Email:</b> ${customer.customer_email || "NA"}</p>
-
-    ${
-        hasMultipleAddresses
-        ? `
-        <div class="multi-address-note">
-            ⚠ Multiple delivery addresses found.
-            Address details are shown with each order.
+    <header>
+        <div class="header-inner">
+            <!-- Update src if your repository uses a different image folder. -->
+            <img
+                class="brand-logo"
+                src="./black%20logo.png"
+                alt="Testbook"
+            >
+            <span class="header-label">Orders &amp; books</span>
         </div>
-        `
-        : `
-        <p>
-            <b>Address:</b><br>
-            ${customer.address_line1 || ""}
-            ${customer.address_line2 ? "<br>" + customer.address_line2 : ""}
-            <br>
-            ${customer.city || ""}
-            ${customer.state ? ", " + customer.state : ""}
-            ${customer.pincode ? " - " + customer.pincode : ""}
+    </header>
+
+    <section class="hero">
+        <p class="eyebrow">Your learning, on track</p>
+        <h1>Your orders. Your books. One place.</h1>
+        <p class="hero-description">
+            Track your shipments and check upcoming book dispatches.
         </p>
-        `
-    }
+    </section>
 
-</div>
-`;
+    <main class="workspace">
+        <nav class="tabs" aria-label="Dashboard sections">
+            <button
+                type="button"
+                id="orderTab"
+                class="tab active"
+                aria-controls="orderSection"
+                aria-pressed="true"
+                onclick="switchTab('order')"
+            >
+                Track order
+            </button>
 
-    data.orders.forEach(order => {
+            <button
+                type="button"
+                id="bookTab"
+                class="tab"
+                aria-controls="bookSection"
+                aria-pressed="false"
+                onclick="switchTab('book')"
+            >
+                Search books
+            </button>
+        </nav>
 
-        const currentAddress = `
-${order.address_line1 || ""}
-${order.address_line2 || ""}
-${order.city || ""}
-${order.state || ""}
-${order.pincode || ""}
-`;
+        <section id="orderSection" class="card" aria-labelledby="orderHeading">
+            <h2 id="orderHeading">Where's your order?</h2>
+            <p class="section-description">
+                Find the latest shipment details and estimated delivery date.
+            </p>
 
-        html += `
-        <div class="order-card">
-        <h3>📦Shipment Details</h3>
+            <form id="orderForm">
+                <label class="search-label" for="inputData">
+                    Mobile number, email or order ID
+                </label>
 
-            <div class="product">${order.product}</div>
+                <div class="search-row">
+                    <input
+                        type="text"
+                        id="inputData"
+                        placeholder="Enter mobile number, email or order ID"
+                        aria-describedby="orderHint"
+                    >
+                    <button class="search-button" type="submit">
+                        Track order
+                    </button>
+                </div>
 
-            <p>Status: ${order.status}</p>
-            <p>Courier: ${order.courier}</p>
-            <p>EDD: ${order.edd || "NA"}</p>
-            <p>AWB: ${order.awb || "NA"}</p>
+                <p id="orderHint" class="input-hint">
+                    Use the details you entered when placing your order.
+                </p>
+            </form>
 
-            ${
-        hasMultipleAddresses
-        ? `
-        <div class="delivery-address">
-            <b>🚚 Delivery Address</b><br>
+            <div id="result" class="result" aria-live="polite"></div>
+        </section>
 
-            ${order.address_line1 || ""}
-            ${order.address_line2 ? "<br>" + order.address_line2 : ""}
-            <br>
+        <section
+            id="bookSection"
+            class="card"
+            aria-labelledby="bookHeading"
+            hidden
+        >
+            <h2 id="bookHeading">Your next read starts here.</h2>
+            <p class="section-description">
+                Look up pre-orders and new books for expected dispatch details.
+            </p>
 
-            ${order.city || ""}
-            ${order.state ? ", " + order.state : ""}
-            ${order.pincode ? " - " + order.pincode : ""}
+            <form id="bookForm">
+                <label class="search-label" for="bookInput">Book name</label>
+
+                <div class="search-row">
+                    <input
+                        type="text"
+                        id="bookInput"
+                        placeholder="Enter a book name"
+                    >
+                    <button class="search-button" type="submit">
+                        Search books
+                    </button>
+                </div>
+            </form>
+
+            <div id="bookResult" class="result" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p class="footer-title">A quick guide to your shipment</p>
+
+        <div class="footer-items">
+            <span><b>EDD</b> &nbsp; Estimated delivery date</span>
+            <span><b>RTO</b> &nbsp; Returned to seller</span>
+            <span><b>AWB</b> &nbsp; Tracking ID</span>
+            <span><b>Pre-orders &amp; new books</b> &nbsp; See Search books</span>
         </div>
-        `
-        : ""
-    }
 
-            ${
-                order.tracking_link
-                ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
-                : `<span style="color:gray;">Tracking not available</span>`
+        <div class="footer-bottom">
+            Testbook &nbsp; / &nbsp; Orders &amp; books dashboard
+        </div>
+    </footer>
+
+    <script>
+        function switchTab(tab) {
+            const showOrders = tab === "order";
+
+            document.getElementById("orderSection").hidden = !showOrders;
+            document.getElementById("bookSection").hidden = showOrders;
+
+            const orderTab = document.getElementById("orderTab");
+            const bookTab = document.getElementById("bookTab");
+
+            orderTab.classList.toggle("active", showOrders);
+            bookTab.classList.toggle("active", !showOrders);
+
+            orderTab.setAttribute("aria-pressed", String(showOrders));
+            bookTab.setAttribute("aria-pressed", String(!showOrders));
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, character => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[character]));
+        }
+
+        function safeTrackingLink(value) {
+            if (typeof value !== "string" || !value.trim()) {
+                return "";
             }
 
-            ${
-                order.rto_reason
-                ? `<div class="rto-box"><b>RTO Reason:</b> ${order.rto_reason}</div>`
-                : ""
+            try {
+                const url = new URL(value, window.location.href);
+
+                return ["https:", "http:"].includes(url.protocol)
+                    ? escapeHTML(url.href)
+                    : "";
+            } catch {
+                return "";
+            }
+        }
+
+        function renderAddress(order) {
+            const lines = [
+                order.address_line1,
+                order.address_line2,
+                [
+                    order.city,
+                    order.state
+                ].filter(Boolean).join(", "),
+                order.pincode
+            ];
+
+            return lines
+                .filter(value => value !== null && value !== undefined && value !== "")
+                .map(escapeHTML)
+                .join("<br>") || "NA";
+        }
+
+        async function fetchResults(endpoint, query) {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ query })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Request failed: ${response.status}`);
             }
 
-        </div>`;
-    });
+            return response.json();
+        }
 
-    resultDiv.innerHTML = html;
-}
-// ======================
-// 🔍 BOOK SEARCH (UPDATED)
-// ======================
-async function searchBooks() {
-    let input = document.getElementById("bookInput").value.trim();
-    let resultDiv = document.getElementById("bookResult");
+        let orderRequest = 0;
+        let bookRequest = 0;
 
-    if (!input) {
-        resultDiv.innerHTML = "<p class='error'>Enter book name</p>";
-        return;
-    }
+        async function searchData() {
+            const requestId = ++orderRequest;
+            const input = document.getElementById("inputData").value.trim();
+            const resultDiv = document.getElementById("result");
 
-    resultDiv.innerHTML = "<p class='loading'>Searching books...</p>";
+            if (!input) {
+                resultDiv.innerHTML =
+                    "<p class='error'>Enter mobile number, email or order ID.</p>";
+                return;
+            }
 
-    try {
-        let response = await fetch("/book-search", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ query: input })
+            resultDiv.innerHTML =
+                "<p class='loading'>Searching for your order...</p>";
+
+            try {
+                const data = await fetchResults("/search", input);
+
+                if (requestId !== orderRequest) return;
+
+                if (!data || !Array.isArray(data.orders)) {
+                    throw new Error("Invalid orders response");
+                }
+
+                if (data.orders.length === 0) {
+                    resultDiv.innerHTML =
+                        "<p class='error'>No orders found.</p>";
+                    return;
+                }
+
+                const uniqueAddresses = new Set(
+                    data.orders.map(order => JSON.stringify([
+                        order.address_line1 || "",
+                        order.address_line2 || "",
+                        order.city || "",
+                        order.state || "",
+                        order.pincode || ""
+                    ]))
+                );
+
+                const hasMultipleAddresses = uniqueAddresses.size > 1;
+                const customer = data.orders[0];
+
+                let html = `
+                    <p class="result-count">
+                        ${escapeHTML(data.count ?? data.orders.length)} Order(s)
+                    </p>
+
+                    <div class="customer-card">
+                        <h3>Customer details</h3>
+                        <p><b>Name:</b> ${escapeHTML(customer.customer_name || "NA")}</p>
+                        <p><b>Mobile:</b> ${escapeHTML(customer.customer_mobile || "NA")}</p>
+                        <p><b>Email:</b> ${escapeHTML(customer.customer_email || "NA")}</p>
+
+                        ${
+                            hasMultipleAddresses
+                                ? `<div class="multi-address-note">
+                                    Multiple delivery addresses found.
+                                    Address details are shown with each order.
+                                   </div>`
+                                : `<p><b>Address:</b><br>${renderAddress(customer)}</p>`
+                        }
+                    </div>
+                `;
+
+                data.orders.forEach(order => {
+                    const trackingLink = safeTrackingLink(order.tracking_link);
+
+                    html += `
+                        <article class="order-card">
+                            <h3>Shipment details</h3>
+
+                            <div class="product">
+                                ${escapeHTML(order.product || "NA")}
+                            </div>
+
+                            <p><b>Status:</b> ${escapeHTML(order.status || "NA")}</p>
+                            <p><b>Courier:</b> ${escapeHTML(order.courier || "NA")}</p>
+                            <p><b>EDD:</b> ${escapeHTML(order.edd || "NA")}</p>
+                            <p><b>AWB:</b> ${escapeHTML(order.awb || "NA")}</p>
+
+                            ${
+                                hasMultipleAddresses
+                                    ? `<div class="delivery-address">
+                                        <b>Delivery address</b><br>
+                                        ${renderAddress(order)}
+                                       </div>`
+                                    : ""
+                            }
+
+                            ${
+                                trackingLink
+                                    ? `<a
+                                        class="track-btn"
+                                        href="${trackingLink}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                       >Track order &rarr;</a>`
+                                    : `<span class="tracking-unavailable">
+                                        Tracking not available
+                                       </span>`
+                            }
+
+                            ${
+                                order.rto_reason
+                                    ? `<div class="rto-box">
+                                        <b>RTO reason:</b>
+                                        ${escapeHTML(order.rto_reason)}
+                                       </div>`
+                                    : ""
+                            }
+                        </article>
+                    `;
+                });
+
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                if (requestId !== orderRequest) return;
+
+                resultDiv.innerHTML =
+                    "<p class='error'>Unable to fetch order details. Please try again.</p>";
+
+                console.error(error);
+            }
+        }
+
+        async function searchBooks() {
+            const requestId = ++bookRequest;
+            const input = document.getElementById("bookInput").value.trim();
+            const resultDiv = document.getElementById("bookResult");
+
+            if (!input) {
+                resultDiv.innerHTML =
+                    "<p class='error'>Enter a book name.</p>";
+                return;
+            }
+
+            resultDiv.innerHTML =
+                "<p class='loading'>Searching books...</p>";
+
+            try {
+                const data = await fetchResults("/book-search", input);
+
+                if (requestId !== bookRequest) return;
+
+                if (!data || !Array.isArray(data.books)) {
+                    throw new Error("Invalid books response");
+                }
+
+                if (data.books.length === 0) {
+                    resultDiv.innerHTML =
+                        "<p class='error'>No books found.</p>";
+                    return;
+                }
+
+                let html = `
+                    <p class="result-count">
+                        ${data.books.length} Book(s)
+                    </p>
+                `;
+
+                data.books.forEach(book => {
+                    html += `
+                        <article class="order-card">
+                            <h3>Book details</h3>
+
+                            <div class="product">
+                                ${escapeHTML(book.BookTitleEnglish || "Not Available")}
+                            </div>
+
+                            <p>
+                                <b>Expected dispatch:</b>
+                                ${escapeHTML(book.estimatedDeliveryTime || "Not Available")}
+                            </p>
+                        </article>
+                    `;
+                });
+
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                if (requestId !== bookRequest) return;
+
+                resultDiv.innerHTML =
+                    "<p class='error'>Unable to fetch book details. Please try again.</p>";
+
+                console.error(error);
+            }
+        }
+
+        document.getElementById("orderForm").addEventListener("submit", event => {
+            event.preventDefault();
+            searchData();
         });
 
-        let data = await response.json();
-
-        if (!data.books || data.books.length === 0) {
-            resultDiv.innerHTML = "<p class='error'>No books found</p>";
-            return;
-        }
-
-        let html = `<p class='success'><b>${data.books.length} Book(s)</b></p>`;
-
-        data.books.forEach(book => {
-    html += `
-        <div class="order-card">
-            <h3>📚 Book Details</h3>
-            <div class="product">${BookTitleEnglish || "Not Available"}</div>
-            <p><b>Expected Dispatch:</b> ${estimatedDeliveryTime || "Not Available"}</p>
-        </div>
-    `;
-});
-
-       /* data.books.forEach(book => {
-           html += `
-<div class="result-row">
-
-    <div class="customer-card">
-        <div class="card-title">👤 Customer Details</div>
-
-        <p><b>Name:</b> ${order.customer_name || "NA"}</p>
-        <p><b>Email:</b> ${order.customer_email || "NA"}</p>
-        <p><b>Mobile:</b> ${order.customer_mobile || "NA"}</p>
-
-        <p>
-            <b>Address:</b><br>
-            ${order.address_line1 || ""}
-            ${order.address_line2 ? "<br>" + order.address_line2 : ""}
-            ${order.city ? "<br>" + order.city : ""}
-            ${order.state ? ", " + order.state : ""}
-            ${order.pincode ? " - " + order.pincode : ""}
-        </p>
-    </div>
-
-    <div class="shipment-card">
-
-        <div class="card-title">📦 Shipment Details</div>
-
-        <div class="product">${order.product}</div>
-
-        <p><b>Status:</b> ${order.status}</p>
-        <p><b>Courier:</b> ${order.courier}</p>
-        <p><b>EDD:</b> ${order.edd || "NA"}</p>
-        <p><b>AWB:</b> ${order.awb || "NA"}</p>
-
-        ${
-            order.tracking_link
-            ? `<a class="track-btn" href="${order.tracking_link}" target="_blank">Track Order</a>`
-            : `<span style="color:gray;">Tracking not available</span>`
-        }
-
-        ${
-            order.rto_reason
-            ? `<div class="rto-box"><b>RTO Reason:</b> ${order.rto_reason}</div>`
-            : ""
-        }
-
-    </div>
-
-</div>`;
-        });*/
-        
-
-        resultDiv.innerHTML = html;
-
-    } catch (err) {
-        resultDiv.innerHTML = "<p class='error'>Error fetching data</p>";
-        console.error(err);
-    }
-}
-document.getElementById("inputData").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        searchData();
-    }
-});
-
-document.getElementById("bookInput").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-        searchBooks();
-    }
-});
-    
-</script>
-
+        document.getElementById("bookForm").addEventListener("submit", event => {
+            event.preventDefault();
+            searchBooks();
+        });
+    </script>
 </body>
 </html>
