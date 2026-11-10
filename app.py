@@ -45,7 +45,7 @@ REDASH_API_KEY_2 = os.environ.get("REDASH_API_KEY_2")
 REDASH_BASE_URL = "https://data.testbook.com"
 
 REDASH_QUERY_ID = "19923"
-BOOK_SEARCH_QUERY_ID = "17893"
+BOOK_SEARCH_QUERY_ID = "16296"
 
 # ==============================
 # ⚡ HELPERS
