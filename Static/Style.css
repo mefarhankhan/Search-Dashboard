@@ -1,1 +1,418 @@
+:root {
+    --black: #171522;
+    --sky: #00b8db;
+    --sky-dark: #007b96;
+    --white: #ffffff;
+    --background: #f4f8fb;
+    --muted: #647383;
+    --border: #e2eaf0;
+}
 
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--background);
+    color: var(--black);
+    font-family: "Segoe UI", Arial, sans-serif;
+    line-height: 1.6;
+}
+
+header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+    max-width: 1080px;
+    margin: auto;
+    padding: 22px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.brand-logo {
+    display: block;
+    width: 190px;
+    max-width: 50%;
+    height: auto;
+}
+
+.header-label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero {
+    max-width: 1080px;
+    margin: auto;
+    padding: 44px 24px 30px;
+}
+
+.eyebrow {
+    margin: 0 0 10px;
+    color: var(--sky-dark);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 0 0 12px;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+
+.hero-description {
+    margin: 0;
+    color: var(--muted);
+}
+
+.workspace {
+    max-width: 1032px;
+    margin: 0 auto 36px;
+    overflow: hidden;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgb(23 21 34 / 4%);
+}
+
+.tabs {
+    display: flex;
+    gap: 28px;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+.tab {
+    padding: 19px 0 16px;
+    background: transparent;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.tab.active {
+    color: var(--black);
+    border-bottom-color: var(--sky);
+}
+
+.tab:hover {
+    color: var(--sky-dark);
+}
+
+.card {
+    padding: 30px 32px 34px;
+}
+
+.card > h2 {
+    margin: 0 0 5px;
+    font-size: 22px;
+    letter-spacing: -0.025em;
+}
+
+.section-description {
+    margin: 0 0 24px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.search-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.search-row {
+    display: flex;
+    gap: 12px;
+}
+
+input {
+    width: 100%;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid #cdd9e1;
+    border-radius: 9px;
+    background: #fbfdfe;
+    color: var(--black);
+    font: inherit;
+    font-size: 14px;
+}
+
+input::placeholder {
+    color: #7b8895;
+}
+
+.search-button {
+    flex-shrink: 0;
+    padding: 13px 26px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--black);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.search-button:hover {
+    background: #30303e;
+}
+
+:where(button, input, a):focus-visible {
+    outline: 3px solid rgb(0 184 219 / 45%);
+    outline-offset: 3px;
+}
+
+.input-hint {
+    margin: 9px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.result {
+    overflow-wrap: anywhere;
+}
+
+.result:not(:empty) {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+}
+
+.result-count {
+    margin: 0 0 16px;
+    color: var(--sky-dark);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.customer-card,
+.order-card {
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.customer-card {
+    background: #f1fbfe;
+    border-color: #ccebf3;
+}
+
+.order-card {
+    background: var(--white);
+}
+
+.order-card:last-child {
+    margin-bottom: 0;
+}
+
+.customer-card h3,
+.order-card h3 {
+    margin: 0 0 14px;
+    font-size: 16px;
+}
+
+.customer-card p,
+.order-card p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.product {
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.track-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 9px 16px;
+    border-radius: 7px;
+    background: var(--black);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.track-btn:hover {
+    background: var(--sky-dark);
+}
+
+.tracking-unavailable {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.delivery-address {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--sky);
+    border-radius: 5px;
+    background: #f5fafc;
+    font-size: 14px;
+}
+
+.multi-address-note,
+.rto-box {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid #c28c00;
+    border-radius: 6px;
+    background: #fff8e6;
+    color: #785800;
+    font-size: 13px;
+}
+
+.rto-box {
+    background: #fff1f1;
+    border-color: #db4545;
+    color: #a12d2d;
+}
+
+.loading,
+.error {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+.loading {
+    background: #edfaff;
+    color: var(--sky-dark);
+}
+
+.error {
+    background: #fff1f1;
+    color: #a12d2d;
+}
+
+footer {
+    max-width: 1032px;
+    margin: auto;
+    padding-bottom: 28px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.footer-title {
+    margin: 0 0 12px;
+    color: var(--black);
+    font-weight: 650;
+}
+
+.footer-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+}
+
+footer b {
+    color: #394756;
+}
+
+.footer-bottom {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 1100px) {
+    .workspace {
+        margin-right: 24px;
+        margin-left: 24px;
+    }
+
+    footer {
+        margin-right: 24px;
+        margin-left: 24px;
+    }
+}
+
+@media (max-width: 600px) {
+    .header-inner {
+        padding: 18px 20px;
+    }
+
+    .brand-logo {
+        width: 148px;
+    }
+
+    .header-label {
+        max-width: 100px;
+        font-size: 9px;
+        text-align: right;
+    }
+
+    .hero {
+        padding: 30px 20px 24px;
+    }
+
+    .hero-description {
+        font-size: 14px;
+    }
+
+    .workspace {
+        margin: 0 16px 30px;
+        border-radius: 13px;
+    }
+
+    .tabs {
+        padding: 0 20px;
+        gap: 26px;
+    }
+
+    .card {
+        padding: 24px 20px;
+    }
+
+    .search-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-button {
+        width: 100%;
+    }
+
+    .customer-card,
+    .order-card {
+        padding: 16px;
+    }
+
+    footer {
+        margin: 0 20px;
+    }
+
+    .footer-items {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
