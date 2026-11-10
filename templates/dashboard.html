@@ -405,26 +405,24 @@
                     </p>
                 `;
 
-                data.books.forEach(book => {
-                    html += `
-                        <article class="order-card">
-                            <h3>Book details</h3>
+data.books.forEach(book => {
+    html += `
+        <article class="order-card">
+            <h3>Book details</h3>
 
-                            <div class="product">
-                                ${escapeHTML(
-                                    book.BookTitleEnglish || "Not Available"
-                                )}
-                            </div>
+            <div class="product">
+                ${escapeHTML(book.name || "Not Available")}
+            </div>
 
-                            <p>
-                                <b>Expected dispatch:</b>
-                                ${escapeHTML(
-                                    book.estimatedDeliveryTime || "Not Available"
-                                )}
-                            </p>
-                        </article>
-                    `;
-                });
+            <p>
+                <b>Expected dispatch:</b>
+                ${escapeHTML(
+                    book.expected_dispatch_time || "Not Available"
+                )}
+            </p>
+        </article>
+    `;
+});
 
                 resultDiv.innerHTML = html;
             } catch (error) {
