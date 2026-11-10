@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Orders & Books | Testbook</title>
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Inside <head> -->
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}"
+>
+    <img
+    class="brand-logo"
+    src="{{ url_for('static', filename='black logo.png') }}"
+    alt="Testbook"
+>
 </head>
 
 <body>
