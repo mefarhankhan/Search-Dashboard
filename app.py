@@ -4,6 +4,8 @@ import time
 import threading
 import requests
 import gspread
+import re
+import unicodedata
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from oauth2client.service_account import ServiceAccountCredentials
@@ -198,35 +200,108 @@ def check_redash_order(query):
         return None
 
 # ==============================
-# 🔴 BOOK CACHE (UNCHANGED)
+# BOOK SEARCH DATA
 # ==============================
-book_cache = []
+book_cache = None
 book_last_updated = 0
 BOOK_CACHE_TTL = 600
+
+
+def normalize_book_text(value):
+    """Ignore letter case and differences in whitespace."""
+    text = unicodedata.normalize("NFKC", str(value or ""))
+    return re.sub(r"\s+", " ", text).strip().casefold()
+
+
+def normalize_book_key(value):
+    """Allow spaces, underscores and case differences in column names."""
+    return "".join(
+        character
+        for character in str(value).casefold()
+        if character.isalnum()
+    )
+
 
 def get_book_redash_data():
     global book_cache, book_last_updated
 
-    if time.time() - book_last_updated < BOOK_CACHE_TTL:
+    if (
+        book_cache is not None
+        and time.time() - book_last_updated < BOOK_CACHE_TTL
+    ):
         return book_cache
+
+    if not REDASH_API_KEY_2:
+        raise RuntimeError("REDASH_API_KEY_2 is not configured")
+
+    url = (
+        f"{REDASH_BASE_URL}/api/queries/"
+        f"{BOOK_SEARCH_QUERY_ID}/results.json"
+    )
+
+    response = requests.get(
+        url,
+        headers={
+            "Authorization": f"Key {REDASH_API_KEY_2}"
+        },
+        timeout=15
+    )
+
+    # Authentication and server errors must not become empty results.
+    response.raise_for_status()
+
+    payload = response.json()
 
     try:
-        url = f"{REDASH_BASE_URL}/api/queries/{BOOK_SEARCH_QUERY_ID}/results.json"
-        headers = {"Authorization": f"Key {REDASH_API_KEY_2}"}
+        rows = payload["query_result"]["data"]["rows"]
+    except (KeyError, TypeError):
+        raise ValueError(
+            "Redash did not return completed query results"
+        ) from None
 
-        res = requests.get(url, headers=headers, timeout=10)
-        rows = res.json().get("query_result", {}).get("data", {}).get("rows", [])
+    if not isinstance(rows, list):
+        raise ValueError("Redash returned an invalid book list")
 
-        book_cache = rows
-        book_last_updated = time.time()
+    books = []
 
-        print(f"📚 Book rows: {len(rows)}")
-        return rows
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("Redash returned an invalid book row")
 
-    except Exception as e:
-        print("❌ Book Redash error:", str(e))
-        return book_cache
+        fields = {
+            normalize_book_key(key): value
+            for key, value in row.items()
+        }
 
+        if "booktitleenglish" not in fields:
+            raise ValueError(
+                "BookTitleEnglish column is missing from Redash results"
+            )
+
+        title = str(fields.get("booktitleenglish") or "").strip()
+
+        if not title:
+            continue
+
+        dispatch = fields.get("estimateddeliverytime")
+
+        books.append({
+            "name": title,
+            "expected_dispatch_time": (
+                str(dispatch).strip()
+                if dispatch is not None and str(dispatch).strip()
+                else "Not Available"
+            )
+        })
+
+    # Cache only successfully validated data.
+    book_cache = books
+    book_last_updated = time.time()
+
+    app.logger.info("Loaded %s books from Redash", len(books))
+
+    return books
+    
 # ==============================
 # 🏠 HOME
 # ==============================
@@ -281,30 +356,49 @@ def search():
 
     return jsonify({"status": "Not Found"})
 
-# ==============================
-# 🔍 BOOK SEARCH (UNCHANGED)
-# ==============================
 @app.route("/book-search", methods=["POST"])
 def book_search():
-    data = request.get_json() or {}
-    query = data.get("query", "").lower().strip()
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Send a JSON object containing a query"
+        }), 400
+
+    raw_query = data.get("query", "")
+
+    if not isinstance(raw_query, str):
+        return jsonify({
+            "error": "Book name must be text"
+        }), 400
+
+    query = normalize_book_text(raw_query)
 
     if not query:
         return jsonify({"books": []})
 
-    rows = get_book_redash_data()
-    results = []
+    try:
+        books = get_book_redash_data()
+    except Exception:
+        app.logger.exception("Book search data loading failed")
 
-    for row in rows:
-        name = str(row.get("BookTitleEnglish") or "").lower()
+        return jsonify({
+            "error": (
+                "Unable to load book details. Please try again later."
+            )
+        }), 502
 
-        if query in name:
-            results.append({
-                "name": row.get("BookTitleEnglish"),
-                "expected_dispatch_time": row.get("estimatedDeliveryTime") or "Not Available"
-            })
+    results = [
+        book
+        for book in books
+        if query in normalize_book_text(book["name"])
+    ]
 
-    return jsonify({"books": results})
+    return jsonify({
+        "books": results
+    })
+
+
 
 # ==============================
 # 🚀 START
