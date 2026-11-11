@@ -587,24 +587,49 @@
           </p>
         `;
 
-        data.books.forEach(book => {
-          html += `
-            <article class="order-card">
-              <h3>Book details</h3>
+       data.books.forEach(book => {
+    const inventoryText =
+        book.inventory === null || book.inventory === undefined
+            ? "Not Available"
+            : `${book.inventory} units`;
 
-              <div class="product">
+    html += `
+        <article class="order-card">
+            <h3>Book details</h3>
+
+            <div class="product">
                 ${escapeHTML(book.name || "Not Available")}
-              </div>
+            </div>
 
-              <p>
-                <b>Expected dispatch:</b>
-                ${escapeHTML(
-                  book.expected_dispatch_time || "Not Available"
-                )}
-              </p>
-            </article>
-          `;
-        });
+            <p class="book-sku">
+                <span>SKU:</span>
+                ${escapeHTML(book.sku || "Not Available")}
+            </p>
+
+            <div class="book-metrics">
+                <div class="book-stat book-dispatch">
+                    <span class="book-stat-label">
+                        Expected dispatch
+                    </span>
+                    <strong>
+                        ${escapeHTML(
+                            book.expected_dispatch_time || "Not Available"
+                        )}
+                    </strong>
+                </div>
+
+                <div class="book-stat book-inventory">
+                    <span class="book-stat-label">
+                        Inventory
+                    </span>
+                    <strong>
+                        ${escapeHTML(inventoryText)}
+                    </strong>
+                </div>
+            </div>
+        </article>
+    `;
+});
 
         resultDiv.innerHTML = html;
       } catch (error) {
