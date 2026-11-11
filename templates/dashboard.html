@@ -9,8 +9,8 @@
 
   <link
     rel="stylesheet"
-    href="{{ url_for('static', filename='Style.css') }}"
-  >
+    href="{{ url_for('static', filename='Style.css', v='books-layout-2') }}"
+>
 </head>
 
 <body>
@@ -551,6 +551,30 @@
         console.error(error);
       }
     }
+    function formatBookDispatch(value) {
+    if (value === null || value === undefined || value === "") {
+        return "Not Available";
+    }
+
+    const text = String(value).trim();
+
+    // Format the supplied calendar date without shifting its timezone.
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:T|\s|$)/);
+
+    if (!match) return text;
+
+    const months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    const month = Number(match[2]);
+
+    if (month < 1 || month > 12) return text;
+
+    return `${Number(match[3])} ${months[month - 1]} ${match[1]}`;
+}
+    
 
     async function searchBooks() {
       const requestId = ++bookRequest;
@@ -594,38 +618,42 @@
             : `${book.inventory} units`;
 
     html += `
-        <article class="order-card">
-            <h3>Book details</h3>
+        <article class="book-result-card">
+            <div class="book-art" aria-hidden="true"></div>
 
-            <div class="product">
-                ${escapeHTML(book.name || "Not Available")}
+            <div class="book-main">
+                <span class="book-kicker">Book details</span>
+
+                <h3 class="book-title">
+                    ${escapeHTML(book.name || "Not Available")}
+                </h3>
+
+                <p class="book-sku-text">
+                    <span>SKU:</span>
+                    ${escapeHTML(book.sku || "Not Available")}
+                </p>
             </div>
 
-            <p class="book-sku">
-                <span>SKU:</span>
-                ${escapeHTML(book.sku || "Not Available")}
-            </p>
+            <div class="book-data-cell book-dispatch-cell">
+                <span class="book-data-label">
+                    Expected dispatch
+                </span>
 
-            <div class="book-metrics">
-                <div class="book-stat book-dispatch">
-                    <span class="book-stat-label">
-                        Expected dispatch
-                    </span>
-                    <strong>
-                        ${escapeHTML(
-                            book.expected_dispatch_time || "Not Available"
-                        )}
-                    </strong>
-                </div>
+                <strong class="book-data-value">
+                    ${escapeHTML(
+                        formatBookDispatch(book.expected_dispatch_time)
+                    )}
+                </strong>
+            </div>
 
-                <div class="book-stat book-inventory">
-                    <span class="book-stat-label">
-                        Inventory
-                    </span>
-                    <strong>
-                        ${escapeHTML(inventoryText)}
-                    </strong>
-                </div>
+            <div class="book-data-cell book-inventory-cell">
+                <span class="book-data-label">
+                    Inventory
+                </span>
+
+                <strong class="book-data-value">
+                    ${escapeHTML(inventoryText)}
+                </strong>
             </div>
         </article>
     `;
