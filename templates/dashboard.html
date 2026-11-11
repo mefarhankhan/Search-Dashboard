@@ -1,449 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Orders & Books | Testbook</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171522">
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='Style.css') }}"
-    >
+  <title>Orders &amp; Books | Testbook</title>
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='Style.css') }}"
+  >
 </head>
 
 <body>
-    <header>
-        <div class="header-inner">
-            <img
-                class="brand-logo"
-                src="{{ url_for('static', filename='black logo.png') }}"
-                alt="Testbook"
-            >
-            <span class="header-label">Orders &amp; books</span>
-        </div>
-    </header>
+  <a class="skip-link" href="#mainContent">Skip to dashboard</a>
 
-    <section class="hero">
-        <p class="eyebrow">Your learning, on track</p>
-        <h1>Your orders. Your books. One place.</h1>
-        <p class="hero-description">
-            Track your shipments and check upcoming book dispatches.
+  <!-- Reusable interface icons -->
+  <svg
+    class="symbol-library"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <symbol id="i-box" viewBox="0 0 24 24">
+      <path d="m12 3 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5M12 13v8M7.5 5.5l9 5"/>
+    </symbol>
+
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/>
+    </symbol>
+
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="10.5" cy="10.5" r="7.5"/>
+      <path d="m16 16 5 5"/>
+    </symbol>
+
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path d="M4 12h16m-6-6 6 6-6 6"/>
+    </symbol>
+
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </symbol>
+
+    <symbol id="i-help" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 1.5-2.5 1.5-2.5 3.5m0 3h.01"/>
+    </symbol>
+
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 7v5l3 2"/>
+    </symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <img
+        class="brand-logo"
+        src="{{ url_for('static', filename='black logo.png') }}"
+        alt="Testbook"
+      >
+
+      <span class="header-label">Orders &amp; books</span>
+
+      <a
+        class="help-link"
+        href="#shipmentGuide"
+        aria-label="Shipment terms and help"
+      >
+        <svg class="icon" aria-hidden="true">
+          <use href="#i-help"/>
+        </svg>
+        <span>Help</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <p class="nav-caption">Your dashboard</p>
+
+      <nav class="tabs" aria-label="Dashboard sections">
+        <button
+          type="button"
+          id="orderTab"
+          class="tab active"
+          aria-controls="orderSection"
+          aria-pressed="true"
+          onclick="switchTab('order')"
+        >
+          <svg class="icon" aria-hidden="true">
+            <use href="#i-box"/>
+          </svg>
+          Track order
+        </button>
+
+        <button
+          type="button"
+          id="bookTab"
+          class="tab"
+          aria-controls="bookSection"
+          aria-pressed="false"
+          onclick="switchTab('book')"
+        >
+          <svg class="icon" aria-hidden="true">
+            <use href="#i-book"/>
+          </svg>
+          Search books
+        </button>
+      </nav>
+
+      <p class="side-note">
+        Your shipments and book dispatch updates, in one place.
+      </p>
+    </aside>
+
+    <main id="mainContent" class="content" tabindex="-1">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">Your learning, on track</p>
+
+          <h1>
+            A little closer to your<br>
+            next <span>chapter.</span>
+          </h1>
+
+          <p class="page-description">
+            Track your order or find your next book.
+          </p>
+        </div>
+
+        <p class="estimate-note">
+          <svg class="icon" aria-hidden="true">
+            <use href="#i-clock"/>
+          </svg>
+          Delivery and dispatch dates are estimates.
         </p>
-    </section>
+      </div>
 
-    <main class="workspace">
-        <nav class="tabs" aria-label="Dashboard sections">
-            <button
-                type="button"
-                id="orderTab"
-                class="tab active"
-                aria-controls="orderSection"
-                aria-pressed="true"
-                onclick="switchTab('order')"
-            >
+      <!-- Order search -->
+      <section
+        id="orderSection"
+        class="card"
+        aria-labelledby="orderHeading"
+      >
+        <div class="search-panel">
+          <h2 id="orderHeading" class="section-heading">
+            <svg class="icon" aria-hidden="true">
+              <use href="#i-box"/>
+            </svg>
+            Where's your order?
+          </h2>
+
+          <form id="orderForm">
+            <label class="search-label" for="inputData">
+              Mobile number, email or order ID
+            </label>
+
+            <div class="search-row">
+              <div class="input-wrap">
+                <svg class="icon" aria-hidden="true">
+                  <use href="#i-search"/>
+                </svg>
+
+                <input
+                  type="text"
+                  id="inputData"
+                  placeholder="Enter mobile, email or order ID"
+                  aria-describedby="orderHint"
+                >
+
+                <button
+                  class="clear-button"
+                  type="reset"
+                  aria-label="Clear order search"
+                >
+                  <svg class="icon" aria-hidden="true">
+                    <use href="#i-close"/>
+                  </svg>
+                </button>
+              </div>
+
+              <button class="search-button" type="submit">
                 Track order
-            </button>
-
-            <button
-                type="button"
-                id="bookTab"
-                class="tab"
-                aria-controls="bookSection"
-                aria-pressed="false"
-                onclick="switchTab('book')"
-            >
-                Search books
-            </button>
-        </nav>
-
-        <section
-            id="orderSection"
-            class="card"
-            aria-labelledby="orderHeading"
-        >
-            <h2 id="orderHeading">Where's your order?</h2>
-            <p class="section-description">
-                Find the latest shipment details and estimated delivery date.
-            </p>
-
-            <form id="orderForm">
-                <label class="search-label" for="inputData">
-                    Mobile number, email or order ID
-                </label>
-
-                <div class="search-row">
-                    <input
-                        type="text"
-                        id="inputData"
-                        placeholder="Enter mobile number, email or order ID"
-                        aria-describedby="orderHint"
-                    >
-                    <button class="search-button" type="submit">
-                        Track order
-                    </button>
-                </div>
-
-                <p id="orderHint" class="input-hint">
-                    Use the details you entered when placing your order.
-                </p>
-            </form>
-
-            <div id="result" class="result" aria-live="polite"></div>
-        </section>
-
-        <section
-            id="bookSection"
-            class="card"
-            aria-labelledby="bookHeading"
-            hidden
-        >
-            <h2 id="bookHeading">Your next read starts here.</h2>
-            <p class="section-description">
-                Look up pre-orders and new books for expected dispatch details.
-            </p>
-
-            <form id="bookForm">
-                <label class="search-label" for="bookInput">
-                    Book name
-                </label>
-
-                <div class="search-row">
-                    <input
-                        type="text"
-                        id="bookInput"
-                        placeholder="Enter a book name"
-                    >
-                    <button class="search-button" type="submit">
-                        Search books
-                    </button>
-                </div>
-            </form>
-
-            <div id="bookResult" class="result" aria-live="polite"></div>
-        </section>
-    </main>
-
-    <footer>
-        <p class="footer-title">A quick guide to your shipment</p>
-
-        <div class="footer-items">
-            <span><b>EDD</b> &nbsp; Estimated delivery date</span>
-            <span><b>RTO</b> &nbsp; Returned to seller</span>
-            <span><b>AWB</b> &nbsp; Tracking ID</span>
-            <span>
-                <b>Pre-orders &amp; new books</b> &nbsp; See Search books
-            </span>
-        </div>
-
-        <div class="footer-bottom">
-            Testbook &nbsp; / &nbsp; Orders &amp; books dashboard
-        </div>
-    </footer>
-
-    <script>
-        function switchTab(tab) {
-            const showOrders = tab === "order";
-
-            document.getElementById("orderSection").hidden = !showOrders;
-            document.getElementById("bookSection").hidden = showOrders;
-
-            const orderTab = document.getElementById("orderTab");
-            const bookTab = document.getElementById("bookTab");
-
-            orderTab.classList.toggle("active", showOrders);
-            bookTab.classList.toggle("active", !showOrders);
-
-            orderTab.setAttribute("aria-pressed", String(showOrders));
-            bookTab.setAttribute("aria-pressed", String(!showOrders));
-        }
-
-        function escapeHTML(value) {
-            return String(value ?? "").replace(/[&<>"']/g, character => ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#39;"
-            }[character]));
-        }
-
-        function safeTrackingLink(value) {
-            if (typeof value !== "string" || !value.trim()) {
-                return "";
-            }
-
-            try {
-                const url = new URL(value, window.location.href);
-
-                return ["https:", "http:"].includes(url.protocol)
-                    ? escapeHTML(url.href)
-                    : "";
-            } catch {
-                return "";
-            }
-        }
-
-        function renderAddress(order) {
-            const lines = [
-                order.address_line1,
-                order.address_line2,
-                [order.city, order.state].filter(Boolean).join(", "),
-                order.pincode
-            ];
-
-            return lines
-                .filter(value =>
-                    value !== null &&
-                    value !== undefined &&
-                    value !== ""
-                )
-                .map(escapeHTML)
-                .join("<br>") || "NA";
-        }
-
-        async function fetchResults(endpoint, query) {
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ query })
-            });
-
-            if (!response.ok) {
-                throw new Error(`Request failed: ${response.status}`);
-            }
-
-            return response.json();
-        }
-
-        let orderRequest = 0;
-        let bookRequest = 0;
-
-        async function searchData() {
-            const requestId = ++orderRequest;
-            const input = document.getElementById("inputData").value.trim();
-            const resultDiv = document.getElementById("result");
-
-            if (!input) {
-                resultDiv.innerHTML =
-                    "<p class='error'>Enter mobile number, email or order ID.</p>";
-                return;
-            }
-
-            resultDiv.innerHTML =
-                "<p class='loading'>Searching for your order...</p>";
-
-            try {
-                const data = await fetchResults("/search", input);
-
-                if (requestId !== orderRequest) return;
-
-                if (!data || !Array.isArray(data.orders)) {
-                    throw new Error("Invalid orders response");
-                }
-
-                if (data.orders.length === 0) {
-                    resultDiv.innerHTML =
-                        "<p class='error'>No orders found.</p>";
-                    return;
-                }
-
-                const uniqueAddresses = new Set(
-                    data.orders.map(order => JSON.stringify([
-                        order.address_line1 || "",
-                        order.address_line2 || "",
-                        order.city || "",
-                        order.state || "",
-                        order.pincode || ""
-                    ]))
-                );
-
-                const hasMultipleAddresses = uniqueAddresses.size > 1;
-                const customer = data.orders[0];
-
-                let html = `
-                    <p class="result-count">
-                        ${escapeHTML(data.count ?? data.orders.length)} Order(s)
-                    </p>
-
-                    <div class="customer-card">
-                        <h3>Customer details</h3>
-
-                        <p>
-                            <b>Name:</b>
-                            ${escapeHTML(customer.customer_name || "NA")}
-                        </p>
-                        <p>
-                            <b>Mobile:</b>
-                            ${escapeHTML(customer.customer_mobile || "NA")}
-                        </p>
-                        <p>
-                            <b>Email:</b>
-                            ${escapeHTML(customer.customer_email || "NA")}
-                        </p>
-
-                        ${
-                            hasMultipleAddresses
-                                ? `<div class="multi-address-note">
-                                    Multiple delivery addresses found.
-                                    Address details are shown with each order.
-                                   </div>`
-                                : `<p>
-                                    <b>Address:</b><br>
-                                    ${renderAddress(customer)}
-                                   </p>`
-                        }
-                    </div>
-                `;
-
-                data.orders.forEach(order => {
-                    const trackingLink = safeTrackingLink(order.tracking_link);
-
-                    html += `
-                        <article class="order-card">
-                            <h3>Shipment details</h3>
-
-                            <div class="product">
-                                ${escapeHTML(order.product || "NA")}
-                            </div>
-
-                            <p>
-                                <b>Status:</b>
-                                ${escapeHTML(order.status || "NA")}
-                            </p>
-                            <p>
-                                <b>Courier:</b>
-                                ${escapeHTML(order.courier || "NA")}
-                            </p>
-                            <p>
-                                <b>EDD:</b>
-                                ${escapeHTML(order.edd || "NA")}
-                            </p>
-                            <p>
-                                <b>AWB:</b>
-                                ${escapeHTML(order.awb || "NA")}
-                            </p>
-
-                            ${
-                                hasMultipleAddresses
-                                    ? `<div class="delivery-address">
-                                        <b>Delivery address</b><br>
-                                        ${renderAddress(order)}
-                                       </div>`
-                                    : ""
-                            }
-
-                            ${
-                                trackingLink
-                                    ? `<a
-                                        class="track-btn"
-                                        href="${trackingLink}"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                       >Track order &rarr;</a>`
-                                    : `<span class="tracking-unavailable">
-                                        Tracking not available
-                                       </span>`
-                            }
-
-                            ${
-                                order.rto_reason
-                                    ? `<div class="rto-box">
-                                        <b>RTO reason:</b>
-                                        ${escapeHTML(order.rto_reason)}
-                                       </div>`
-                                    : ""
-                            }
-                        </article>
-                    `;
-                });
-
-                resultDiv.innerHTML = html;
-            } catch (error) {
-                if (requestId !== orderRequest) return;
-
-                resultDiv.innerHTML =
-                    "<p class='error'>Unable to fetch order details. Please try again.</p>";
-
-                console.error(error);
-            }
-        }
-
-        async function searchBooks() {
-            const requestId = ++bookRequest;
-            const input = document.getElementById("bookInput").value.trim();
-            const resultDiv = document.getElementById("bookResult");
-
-            if (!input) {
-                resultDiv.innerHTML =
-                    "<p class='error'>Enter a book name.</p>";
-                return;
-            }
-
-            resultDiv.innerHTML =
-                "<p class='loading'>Searching books...</p>";
-
-            try {
-                const data = await fetchResults("/book-search", input);
-
-                if (requestId !== bookRequest) return;
-
-                if (!data || !Array.isArray(data.books)) {
-                    throw new Error("Invalid books response");
-                }
-
-                if (data.books.length === 0) {
-                    resultDiv.innerHTML =
-                        "<p class='error'>No books found.</p>";
-                    return;
-                }
-
-                let html = `
-                    <p class="result-count">
-                        ${data.books.length} Book(s)
-                    </p>
-                `;
-
-data.books.forEach(book => {
-    html += `
-        <article class="order-card">
-            <h3>Book details</h3>
-
-            <div class="product">
-                ${escapeHTML(book.name || "Not Available")}
+                <svg class="icon" aria-hidden="true">
+                  <use href="#i-arrow"/>
+                </svg>
+              </button>
             </div>
 
-            <p>
-                <b>Expected dispatch:</b>
-                ${escapeHTML(
-                    book.expected_dispatch_time || "Not Available"
-                )}
+            <p id="orderHint" class="input-hint">
+              Use the details you entered when placing your order.
             </p>
-        </article>
-    `;
-});
+          </form>
+        </div>
 
-                resultDiv.innerHTML = html;
-            } catch (error) {
-                if (requestId !== bookRequest) return;
+        <div id="result" class="result" aria-live="polite"></div>
 
-                resultDiv.innerHTML =
-                    "<p class='error'>Unable to fetch book details. Please try again.</p>";
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg class="icon" aria-hidden="true">
+              <use href="#i-box"/>
+            </svg>
+          </div>
 
-                console.error(error);
-            }
+          <h3>Your shipment details will appear here</h3>
+          <p>
+            Search above to see the latest status, courier and estimated
+            delivery date.
+          </p>
+        </div>
+      </section>
+
+      <!-- Book search -->
+      <section
+        id="bookSection"
+        class="card"
+        aria-labelledby="bookHeading"
+        hidden
+      >
+        <div class="search-panel">
+          <h2 id="bookHeading" class="section-heading">
+            <svg class="icon" aria-hidden="true">
+              <use href="#i-book"/>
+            </svg>
+            Find your next read
+          </h2>
+
+          <form id="bookForm">
+            <label class="search-label" for="bookInput">
+              Book name
+            </label>
+
+            <div class="search-row">
+              <div class="input-wrap">
+                <svg class="icon" aria-hidden="true">
+                  <use href="#i-search"/>
+                </svg>
+
+                <input
+                  type="text"
+                  id="bookInput"
+                  placeholder="Try SSC, Railway or a book title"
+                  aria-describedby="bookHint"
+                >
+
+                <button
+                  class="clear-button"
+                  type="reset"
+                  aria-label="Clear book search"
+                >
+                  <svg class="icon" aria-hidden="true">
+                    <use href="#i-close"/>
+                  </svg>
+                </button>
+              </div>
+
+              <button class="search-button" type="submit">
+                Search books
+                <svg class="icon" aria-hidden="true">
+                  <use href="#i-arrow"/>
+                </svg>
+              </button>
+            </div>
+
+            <p id="bookHint" class="input-hint">
+              Try an exam name or part of a book title.
+            </p>
+          </form>
+        </div>
+
+        <div id="bookResult" class="result" aria-live="polite"></div>
+
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg class="icon" aria-hidden="true">
+              <use href="#i-book"/>
+            </svg>
+          </div>
+
+          <h3>Your next chapter starts with a search</h3>
+          <p>
+            Find matching books and check their expected dispatch dates.
+          </p>
+        </div>
+      </section>
+
+      <footer class="guide">
+        <details id="shipmentGuide" open>
+          <summary>Shipment terms &amp; quick help</summary>
+
+          <dl class="glossary">
+            <div>
+              <dt>EDD</dt>
+              <dd>Estimated delivery date</dd>
+            </div>
+
+            <div>
+              <dt>AWB</dt>
+              <dd>Your shipment tracking ID</dd>
+            </div>
+
+            <div>
+              <dt>RTO</dt>
+              <dd>Returned to seller</dd>
+            </div>
+          </dl>
+        </details>
+
+        <div class="footer-bottom">
+          <span>Testbook &nbsp;/&nbsp; Orders &amp; books</span>
+          <span>Pre-orders and new books: use Search books.</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      const showOrders = tab === "order";
+
+      document.getElementById("orderSection").hidden = !showOrders;
+      document.getElementById("bookSection").hidden = showOrders;
+
+      const orderTab = document.getElementById("orderTab");
+      const bookTab = document.getElementById("bookTab");
+
+      orderTab.classList.toggle("active", showOrders);
+      bookTab.classList.toggle("active", !showOrders);
+
+      orderTab.setAttribute("aria-pressed", String(showOrders));
+      bookTab.setAttribute("aria-pressed", String(!showOrders));
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[character]));
+    }
+
+    function safeTrackingLink(value) {
+      if (typeof value !== "string" || !value.trim()) {
+        return "";
+      }
+
+      try {
+        const url = new URL(value, window.location.href);
+
+        return ["https:", "http:"].includes(url.protocol)
+          ? escapeHTML(url.href)
+          : "";
+      } catch {
+        return "";
+      }
+    }
+
+    function renderAddress(order) {
+      const lines = [
+        order.address_line1,
+        order.address_line2,
+        [order.city, order.state].filter(Boolean).join(", "),
+        order.pincode
+      ];
+
+      return lines
+        .filter(value =>
+          value !== null &&
+          value !== undefined &&
+          value !== ""
+        )
+        .map(escapeHTML)
+        .join("<br>") || "NA";
+    }
+
+    async function fetchResults(endpoint, query) {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ query })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    let orderRequest = 0;
+    let bookRequest = 0;
+
+    async function searchData() {
+      const requestId = ++orderRequest;
+      const input = document.getElementById("inputData").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!input) {
+        resultDiv.innerHTML =
+          "<p class='error'>Enter mobile number, email or order ID.</p>";
+        return;
+      }
+
+      resultDiv.innerHTML =
+        "<p class='loading'>Searching for your order...</p>";
+
+      try {
+        const data = await fetchResults("/search", input);
+
+        if (requestId !== orderRequest) return;
+
+        if (!data || !Array.isArray(data.orders)) {
+          throw new Error("Invalid orders response");
         }
 
-        document.getElementById("orderForm").addEventListener("submit", event => {
-            event.preventDefault();
-            searchData();
+        if (data.orders.length === 0) {
+          resultDiv.innerHTML =
+            "<p class='error'>No orders found.</p>";
+          return;
+        }
+
+        const uniqueAddresses = new Set(
+          data.orders.map(order => JSON.stringify([
+            order.address_line1 || "",
+            order.address_line2 || "",
+            order.city || "",
+            order.state || "",
+            order.pincode || ""
+          ]))
+        );
+
+        const hasMultipleAddresses = uniqueAddresses.size > 1;
+        const customer = data.orders[0];
+
+        let html = `
+          <p class="result-count">
+            ${escapeHTML(data.count ?? data.orders.length)} Order(s)
+          </p>
+
+          <div class="customer-card">
+            <h3>Customer details</h3>
+
+            <p>
+              <b>Name:</b>
+              ${escapeHTML(customer.customer_name || "NA")}
+            </p>
+
+            <p>
+              <b>Mobile:</b>
+              ${escapeHTML(customer.customer_mobile || "NA")}
+            </p>
+
+            <p>
+              <b>Email:</b>
+              ${escapeHTML(customer.customer_email || "NA")}
+            </p>
+
+            ${
+              hasMultipleAddresses
+                ? `<div class="multi-address-note">
+                    Multiple delivery addresses found.
+                    Address details are shown with each order.
+                   </div>`
+                : `<p>
+                    <b>Address:</b><br>
+                    ${renderAddress(customer)}
+                   </p>`
+            }
+          </div>
+        `;
+
+        data.orders.forEach(order => {
+          const trackingLink = safeTrackingLink(order.tracking_link);
+
+          html += `
+            <article class="order-card">
+              <h3>Shipment details</h3>
+
+              <div class="product">
+                ${escapeHTML(order.product || "NA")}
+              </div>
+
+              <p>
+                <b>Status:</b>
+                ${escapeHTML(order.status || "NA")}
+              </p>
+
+              <p>
+                <b>Courier:</b>
+                ${escapeHTML(order.courier || "NA")}
+              </p>
+
+              <p>
+                <b>EDD:</b>
+                ${escapeHTML(order.edd || "NA")}
+              </p>
+
+              <p>
+                <b>AWB:</b>
+                ${escapeHTML(order.awb || "NA")}
+              </p>
+
+              ${
+                hasMultipleAddresses
+                  ? `<div class="delivery-address">
+                      <b>Delivery address</b><br>
+                      ${renderAddress(order)}
+                     </div>`
+                  : ""
+              }
+
+              ${
+                trackingLink
+                  ? `<a
+                      class="track-btn"
+                      href="${trackingLink}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                     >Track order &rarr;</a>`
+                  : `<span class="tracking-unavailable">
+                      Tracking not available
+                     </span>`
+              }
+
+              ${
+                order.rto_reason
+                  ? `<div class="rto-box">
+                      <b>RTO reason:</b>
+                      ${escapeHTML(order.rto_reason)}
+                     </div>`
+                  : ""
+              }
+            </article>
+          `;
         });
 
-        document.getElementById("bookForm").addEventListener("submit", event => {
-            event.preventDefault();
-            searchBooks();
+        resultDiv.innerHTML = html;
+      } catch (error) {
+        if (requestId !== orderRequest) return;
+
+        resultDiv.innerHTML =
+          "<p class='error'>Unable to fetch order details. Please try again.</p>";
+
+        console.error(error);
+      }
+    }
+
+    async function searchBooks() {
+      const requestId = ++bookRequest;
+      const input = document.getElementById("bookInput").value.trim();
+      const resultDiv = document.getElementById("bookResult");
+
+      if (!input) {
+        resultDiv.innerHTML =
+          "<p class='error'>Enter a book name.</p>";
+        return;
+      }
+
+      resultDiv.innerHTML =
+        "<p class='loading'>Searching books...</p>";
+
+      try {
+        const data = await fetchResults("/book-search", input);
+
+        if (requestId !== bookRequest) return;
+
+        if (!data || !Array.isArray(data.books)) {
+          throw new Error("Invalid books response");
+        }
+
+        if (data.books.length === 0) {
+          resultDiv.innerHTML =
+            "<p class='error'>No books found.</p>";
+          return;
+        }
+
+        let html = `
+          <p class="result-count">
+            ${data.books.length} Book(s)
+          </p>
+        `;
+
+        data.books.forEach(book => {
+          html += `
+            <article class="order-card">
+              <h3>Book details</h3>
+
+              <div class="product">
+                ${escapeHTML(book.name || "Not Available")}
+              </div>
+
+              <p>
+                <b>Expected dispatch:</b>
+                ${escapeHTML(
+                  book.expected_dispatch_time || "Not Available"
+                )}
+              </p>
+            </article>
+          `;
         });
-    </script>
+
+        resultDiv.innerHTML = html;
+      } catch (error) {
+        if (requestId !== bookRequest) return;
+
+        resultDiv.innerHTML =
+          "<p class='error'>Unable to fetch book details. Please try again.</p>";
+
+        console.error(error);
+      }
+    }
+
+    document.getElementById("orderForm").addEventListener("submit", event => {
+      event.preventDefault();
+      searchData();
+    });
+
+    document.getElementById("bookForm").addEventListener("submit", event => {
+      event.preventDefault();
+      searchBooks();
+    });
+  </script>
 </body>
 </html>
