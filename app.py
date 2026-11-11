@@ -286,13 +286,15 @@ def get_book_redash_data():
         dispatch = fields.get("estimateddeliverytime")
 
         books.append({
-            "name": title,
-            "expected_dispatch_time": (
-                str(dispatch).strip()
-                if dispatch is not None and str(dispatch).strip()
-                else "Not Available"
-            )
-        })
+    "name": title,
+    "sku": str(fields.get("skus") or "").strip(),
+    "inventory": fields.get("inventory"),
+    "expected_dispatch_time": (
+        str(dispatch).strip()
+        if dispatch is not None and str(dispatch).strip()
+        else "Not Available"
+    )
+})
 
     # Cache only successfully validated data.
     book_cache = books
@@ -369,7 +371,7 @@ def book_search():
 
     if not isinstance(raw_query, str):
         return jsonify({
-            "error": "Book name must be text"
+            "error": "Book name or SKU must be text"
         }), 400
 
     query = normalize_book_text(raw_query)
@@ -383,21 +385,19 @@ def book_search():
         app.logger.exception("Book search data loading failed")
 
         return jsonify({
-            "error": (
-                "Unable to load book details. Please try again later."
-            )
+            "error": "Unable to load book details. Please try again later."
         }), 502
 
     results = [
         book
         for book in books
-        if query in normalize_book_text(book["name"])
+        if (
+            query in normalize_book_text(book.get("name", ""))
+            or query in normalize_book_text(book.get("sku", ""))
+        )
     ]
 
-    return jsonify({
-        "books": results
-    })
-
+    return jsonify({"books": results})
 
 
 # ==============================
