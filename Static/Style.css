@@ -1158,3 +1158,115 @@ input:focus {
     transition: none !important;
   }
 }
+/* Book results: title, SKU, dispatch and inventory */
+
+#bookResult .order-card {
+    grid-template-columns:
+        65px
+        minmax(0, 1fr)
+        minmax(240px, 280px);
+    row-gap: 6px;
+}
+
+#bookResult .order-card::before {
+    grid-row: 1 / span 3;
+}
+
+#bookResult .order-card > .book-sku {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: start;
+    margin: 3px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+}
+
+.book-sku span {
+    color: #415564;
+    font-weight: 650;
+}
+
+.book-metrics {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 10px;
+    min-width: 0;
+}
+
+.book-stat {
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #d8f3f8;
+    border-radius: 9px;
+    background: #ebfaff;
+    overflow-wrap: anywhere;
+}
+
+.book-stat-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--sky-dark);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.book-stat strong {
+    display: block;
+    color: #123f4b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.book-inventory {
+    background: #f5f8fa;
+    border-color: var(--line);
+}
+
+.book-inventory .book-stat-label {
+    color: var(--muted);
+}
+
+.book-inventory strong {
+    color: var(--ink);
+}
+
+@media (max-width: 1100px) {
+    #bookResult .order-card {
+        grid-template-columns: 48px minmax(0, 1fr);
+        column-gap: 14px;
+    }
+
+    #bookResult .order-card::before {
+        width: 45px;
+        height: 65px;
+    }
+
+    #bookResult .order-card .book-metrics {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 560px) {
+    .book-metrics {
+        gap: 8px;
+    }
+
+    .book-stat {
+        padding: 12px;
+    }
+
+    .book-stat strong {
+        font-size: 12px;
+    }
+}
